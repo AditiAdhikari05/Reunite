@@ -1,4 +1,4 @@
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 /* Reunite frontend logic. Plain JavaScript, no build step.
    When USE_MOCK is true, every API call is answered by the synthetic mock

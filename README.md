@@ -24,9 +24,11 @@ cd Reunite/frontend
 python3 -m http.server 5500
 ```
 
-Then open <http://localhost:5500/>. Use the local server instead of double-clicking the HTML files, because pages opened as `file://` cannot share demo data.
+First set `USE_MOCK = true` in `frontend/app.js` (see "Mock mode vs live backend" below), because there is no backend on your laptop. Then open <http://localhost:5500/>. Use the local server instead of double-clicking the HTML files, because pages opened as `file://` cannot share demo data.
 
-### Demo logins 
+### Demo logins (mock mode only)
+
+These accounts do not exist on the live server.
 
 | Portal | Email | Password | 
 |---|---|---|
@@ -68,10 +70,10 @@ frontend/
 The first line of `frontend/app.js` is:
 
 ```js
-const USE_MOCK = true;
+const USE_MOCK = false;
 ```
 
-Keep it `true` until Swastik confirms the server is up. Then set it to `false`, upload the folder, and run the live demo script end to end. Send Swastik any response that does not match the contract below, with the request and response pasted in.
+It is `false` because the live backend is up: the Flask app on LinuxONE serves this folder and the API at <http://148.100.76.31:5000/>. Set it to `true` only to run the frontend on its own with fake data. Set it back to `false` before uploading to the server. Send Swastik any response that does not match the contract below, with the request and response pasted in.
 
 ## API contract
 
