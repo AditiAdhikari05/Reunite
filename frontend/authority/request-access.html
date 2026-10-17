@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request authority access · DisasterBridge</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../app.js" defer></script>
+  <script src="authority.js" defer></script>
+</head>
+<body data-page="authority-request" class="portal-authority">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="../index.html">DisasterBridge <span class="portal-tag">Authority portal</span></a>
+      <nav class="site-nav" aria-label="Main">
+        <ul><li><a href="../index.html">← Home</a></li></ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <p id="mock-indicator"></p>
+    <div class="auth-shell">
+      <aside class="auth-aside">
+        <h2>How access works</h2>
+        <ul>
+          <li>Fill in this form with your work details.</li>
+          <li>The administrator checks your request.</li>
+          <li>Once approved, log in with the email and password you chose here.</li>
+        </ul>
+        <p>Until then, you will not be able to see any reports.</p>
+      </aside>
+
+      <section class="auth-main" aria-labelledby="request-title">
+        <h1 id="request-title">Request authority access</h1>
+        <form id="request-form" novalidate>
+          <div class="field">
+            <label for="r-name">Full name</label>
+            <input id="r-name" name="name" type="text" autocomplete="name" required aria-describedby="r-name-error">
+            <p id="r-name-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="r-email">Work email</label>
+            <input id="r-email" name="email" type="email" autocomplete="email" required aria-describedby="r-email-error">
+            <p id="r-email-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="r-agency">Agency or organisation <span class="hint">For example City Fire Department, General Hospital</span></label>
+            <input id="r-agency" name="agency" type="text" autocomplete="organization" required aria-describedby="r-agency-error">
+            <p id="r-agency-error" class="field-error"></p>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="r-position">Job title</label>
+              <input id="r-position" name="position" type="text" autocomplete="organization-title" required aria-describedby="r-position-error">
+              <p id="r-position-error" class="field-error"></p>
+            </div>
+            <div class="field">
+              <label for="r-staff">Staff or badge number <span class="optional">(optional)</span></label>
+              <input id="r-staff" name="staff_id" type="text">
+            </div>
+          </div>
+          <div class="field">
+            <label for="r-reason">Why do you need access? <span class="hint">One or two sentences</span></label>
+            <textarea id="r-reason" name="reason" style="min-height:5rem" required aria-describedby="r-reason-error"></textarea>
+            <p id="r-reason-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="r-password">Choose a password <span class="hint">At least 8 characters</span></label>
+            <div class="pw-wrap">
+              <input id="r-password" name="password" type="password" autocomplete="new-password" required aria-describedby="r-password-error">
+              <button type="button" class="pw-toggle" aria-controls="r-password" aria-pressed="false">Show</button>
+            </div>
+            <p id="r-password-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="r-password2">Type the password again</label>
+            <div class="pw-wrap">
+              <input id="r-password2" name="password2" type="password" autocomplete="new-password" required aria-describedby="r-password2-error">
+              <button type="button" class="pw-toggle" aria-controls="r-password2" aria-pressed="false">Show</button>
+            </div>
+            <p id="r-password2-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label class="check" for="r-consent">
+              <input id="r-consent" name="consent" type="checkbox" required aria-describedby="r-consent-error">
+              <span>I confirm that my organisation has authorised me to work on family reunification, and I will keep people's information confidential.</span>
+            </label>
+            <p id="r-consent-error" class="field-error"></p>
+          </div>
+          <div class="actions"><button type="submit">Send request</button></div>
+        </form>
+        <div id="request-message" class="message" role="alert" tabindex="-1"></div>
+
+        <div class="auth-switch">
+          <p>Already approved? <a href="login.html">Log in</a></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">Demo using synthetic data only.</footer>
+</body>
+</html>
