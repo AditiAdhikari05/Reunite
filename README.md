@@ -59,7 +59,7 @@ frontend/
   app.js                   Shared code: USE_MOCK switch, API helper, mock backend, public pages
   style.css                Shared styles
   family/                  Family portal: login, signup, dashboard (family.js)
-  authority/               Authority portal: login (email, password, PIN), request access, dashboard (authority.js)
+  authority/               Authority portal: login (email, password), request access, dashboard (authority.js)
   authority.html           Redirects to authority/login.html
 ```
 
@@ -77,7 +77,7 @@ Keep it `true` until Swastik confirms the server is up. Then set it to `false`, 
 
 All bodies are JSON. Errors return `{"error": "message"}` with a 4xx status. Dates are ISO strings like `"2026-10-17T14:30"`. All URLs are relative (`fetch("/api/...")`).
 
-Authority routes send **`X-Auth-Pin: <pin>`**. Account routes use a **session cookie**.
+Logged-in routes use a **session cookie**. Authority routes need an `authority` or `admin` account (401 if not logged in, 403 for other roles). There is no PIN.
 
 ### Core routes (from Swastik's brief)
 
@@ -86,10 +86,10 @@ Authority routes send **`X-Auth-Pin: <pin>`**. Account routes use a **session co
 | GET | `/api/places` | anyone | List of place names (strings, or objects with `name`). Feeds the place autocomplete |
 | POST | `/api/missing` | family | Missing report (below). Returns `{id, status}` |
 | GET | `/api/status/<id>` | anyone | `{id, status, authority_contact}`. `status` is `searching`, `possible_match` or `reunited`. **No match details** |
-| POST | `/api/found` | authority + PIN | Found record. Returns `{id}` |
-| GET | `/api/missing` | authority + PIN | All reports with `id`, `status`, `summary` and **`flagged`** (true if the engine flagged it) |
-| GET | `/api/matches/<id>` | authority + PIN | `{missing_id, missing?, candidates: [...]}`. The frontend shows the top 10 |
-| POST | `/api/matches/<id>/decision` | authority + PIN | `{found_id, decision: "confirm" \| "reject" \| "undo"}`. **409** if that found person is already claimed by another report |
+| POST | `/api/found` | authority | Found record. Returns `{id}` |
+| GET | `/api/missing` | authority | All reports with `id`, `status`, `summary` and **`flagged`** (true if the engine flagged it) |
+| GET | `/api/matches/<id>` | authority | `{missing_id, missing?, candidates: [...]}`. The frontend shows the top 10 |
+| POST | `/api/matches/<id>/decision` | authority | `{found_id, decision: "confirm" \| "reject" \| "undo"}`. **409** if that found person is already claimed by another report |
 | GET | `/api/demo-cases` | anyone | `[{id, title, good_for_live_demo, missing: {...}, found: {...}}]` |
 | GET | `/api/benchmark` | anyone | See below |
 

@@ -6,35 +6,23 @@ const STAFF_ROLES = ["authority", "admin"];
 PAGES["authority-login"] = async function () {
   const box = $("#login-message");
   showExpiredNotice(box);
-  if (USE_MOCK) $("#login-hint").textContent = "Demo admin: " + DEMO_ADMIN.email + " / " + DEMO_ADMIN.password + ". Any PIN works in demo mode.";
+  if (USE_MOCK) $("#login-hint").textContent = "Demo admin: " + DEMO_ADMIN.email + " / " + DEMO_ADMIN.password + ".";
 
   const u = await currentUser();
-  if (u && STAFF_ROLES.includes(u.role) && getPin()) { location.replace("index.html"); return; }
+  if (u && STAFF_ROLES.includes(u.role)) { location.replace("index.html"); return; }
 
   const form = $("#login-form");
   form.addEventListener("submit", async ev => {
     ev.preventDefault();
     clearMessage(box);
-    const data = readForm(form, ["email", "password", "pin"]);
-    const errors = validate(form, data, ["email", "password", "pin"]);
+    const data = readForm(form, ["email", "password"]);
+    const errors = validate(form, data, ["email", "password"]);
     if (errors.length) { showMessage(box, "error", errorSummary(form, errors)); return; }
     await withBusy(form.querySelector("button[type=submit]"), async () => {
       try {
         await api("POST", "/api/auth/login", { email: data.email, password: data.password, role: "authority" });
       } catch (e) {
         showMessage(box, "error", e.status === 401 ? "Email or password is incorrect." : e.message);
-        return;
-      }
-      // Check the PIN with a real authority request before going in.
-      setPin(data.pin);
-      try {
-        await api("GET", "/api/missing", undefined, { auth: true });
-      } catch (e) {
-        clearPin();
-        try { await api("POST", "/api/auth/logout"); } catch (err) { /* ignore */ }
-        setFieldError(form, "pin", "This PIN was not accepted.");
-        showMessage(box, "error", e.status === 401 || e.status === 403
-          ? "The access PIN was not accepted. Please check it with your team lead." : e.message);
         return;
       }
       form.reset();
@@ -71,7 +59,6 @@ PAGES["authority-request"] = function () {
 PAGES["authority-dashboard"] = async function () {
   const user = await requireUser(STAFF_ROLES, "login.html");
   if (!user) return;
-  if (!getPin()) { location.replace("login.html"); return; }
   const isAdmin = user.role === "admin";
   let reports = [];
   let selected = null;
@@ -81,14 +68,13 @@ PAGES["authority-dashboard"] = async function () {
   // Redirects to the login page when the session has ended.
   async function guarded(fn, box) {
     try { return await fn(); } catch (e) {
-      if (e.status === 401) { clearPin(); goToLogin("login.html"); }
+      if (e.status === 401) { goToLogin("login.html"); }
       else if (box) showMessage(box, "error", e.message);
       throw e;
     }
   }
 
   $("#logout-button").addEventListener("click", async () => {
-    clearPin();
     try { await api("POST", "/api/auth/logout"); } catch (e) { /* ignore */ }
     location.assign("login.html");
   });
@@ -96,7 +82,7 @@ PAGES["authority-dashboard"] = async function () {
   async function loadReports() {
     const box = $("#reports-message");
     clearMessage(box);
-    reports = await guarded(() => api("GET", "/api/missing", undefined, { auth: true }), box);
+    reports = await guarded(() => api("GET", "/api/missing", undefined), box);
     // Reports the engine has flagged come first.
     reports.sort((a, b) => isFlagged(b) - isFlagged(a));
     renderReports();
@@ -217,7 +203,7 @@ PAGES["authority-dashboard"] = async function () {
     joinDateTime(data, "found", "found_time");
     await withBusy(fForm.querySelector("button[type=submit]"), async () => {
       try {
-        const res = await guarded(() => api("POST", "/api/found", data, { auth: true }), fMsg);
+        const res = await guarded(() => api("POST", "/api/found", data), fMsg);
         fForm.reset();
         showMessage(fMsg, "success", "Found person saved as " + res.id + ". Match suggestions will update.");
         await loadReports();
@@ -240,7 +226,7 @@ PAGES["authority-dashboard"] = async function () {
     list.replaceChildren(el("p", { text: "Loading suggestions…" }));
     let data;
     try {
-      data = await guarded(() => api("GET", "/api/matches/" + encodeURIComponent(id), undefined, { auth: true }), box);
+      data = await guarded(() => api("GET", "/api/matches/" + encodeURIComponent(id), undefined), box);
     } catch (e) { list.replaceChildren(); return; }
 
     const report = data.missing || reports.find(r => r.id === id) || {};
@@ -284,9 +270,9 @@ PAGES["authority-dashboard"] = async function () {
       await withBusy(btn, async () => {
         try {
           await api("POST", "/api/matches/" + encodeURIComponent(mid) + "/decision",
-            { found_id: c.found_id, decision: action }, { auth: true });
+            { found_id: c.found_id, decision: action });
         } catch (e) {
-          if (e.status === 401) { clearPin(); goToLogin("login.html"); return; }
+          if (e.status === 401) { goToLogin("login.html"); return; }
           showMessage(box, "error", e.status === 409
             ? ["Cannot confirm: ", el("strong", { text: e.message }),
                " Check the other report first. If that match was wrong, undo it there."]

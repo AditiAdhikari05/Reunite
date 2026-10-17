@@ -75,27 +75,12 @@ class ApiError extends Error {
   constructor(message, status) { super(message); this.status = status; }
 }
 
-/* The authority PIN is typed in at login and kept only for this browser tab.
-   It is never written into the code. */
-const PIN_KEY = "db_auth_pin";
-function getPin() {
-  try { return sessionStorage.getItem(PIN_KEY) || ""; } catch (e) { return ""; }
-}
-function setPin(pin) {
-  try { sessionStorage.setItem(PIN_KEY, pin); } catch (e) { /* ignore */ }
-}
-function clearPin() {
-  try { sessionStorage.removeItem(PIN_KEY); } catch (e) { /* ignore */ }
-}
-
-// opts.auth = true sends the authority PIN as the X-Auth-Pin header.
-async function api(method, path, body, opts) {
-  const auth = !!(opts && opts.auth);
-  if (USE_MOCK) return mockApi(method, path, body, auth ? getPin() : "");
+// Logged-in routes rely on the session cookie, which the browser sends itself.
+async function api(method, path, body) {
+  if (USE_MOCK) return mockApi(method, path, body);
 
   const headers = { Accept: "application/json" };
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (auth) headers["X-Auth-Pin"] = getPin();
 
   let res;
   try {
@@ -407,7 +392,7 @@ function cleanReport(id, r) {
   return out;
 }
 
-async function mockApi(method, path, body, pin) {
+async function mockApi(method, path, body) {
   await new Promise(r => setTimeout(r, 200)); // feel like a network call
   const state = mockLoad();
   const fail = (status, error) => { throw new ApiError(error, status); };
@@ -417,12 +402,8 @@ async function mockApi(method, path, body, pin) {
     if (!user) fail(401, "Please log in.");
     if (!roles.includes(user.role)) fail(403, "You do not have access to this.");
   };
-  // Swastik's backend checks X-Auth-Pin on authority routes. The mock accepts
-  // any non-empty PIN; the real server checks the real one.
-  const isStaff = () => {
-    needRole("authority", "admin");
-    if (!pin) fail(401, "Access PIN required.");
-  };
+  // Authority routes need a logged-in authority or admin account.
+  const isStaff = () => needRole("authority", "admin");
   let m;
   body = body || {};
 
@@ -677,7 +658,7 @@ const PERSON_LABELS = {
   relationship: "Relationship", age: "Age",
   agency: "Agency or organisation", position: "Job title", staff_id: "Staff or badge number",
   reason: "Reason for access",
-  pin: "Access PIN", reporter_name: "Your name", reporter_phone: "Your phone number",
+  reporter_name: "Your name", reporter_phone: "Your phone number",
 };
 
 function readForm(form, fields) {
