@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Authority dashboard · DisasterBridge</title>
+  <title>Authority dashboard · Reunite</title>
   <link rel="stylesheet" href="../style.css">
   <script src="../app.js" defer></script>
   <script src="authority.js" defer></script>
@@ -12,7 +12,7 @@
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="index.html">DisasterBridge <span class="portal-tag">Authority portal</span></a>
+      <a class="brand" href="index.html">Reunite <span class="portal-tag">Authority portal</span></a>
       <div class="user-menu">
         <span class="who" id="welcome-name"></span>
         <button type="button" id="logout-button" class="secondary">Log out</button>
@@ -30,8 +30,14 @@
       </div>
     </div>
 
+    <div id="demo-panel" class="card demo-panel hidden" aria-label="Demo helper"></div>
+
     <section class="card" aria-labelledby="reports-title">
-      <h2 id="reports-title">Missing-person reports</h2>
+      <div class="candidate-head">
+        <h2 id="reports-title">Missing-person reports</h2>
+        <button type="button" id="refresh-reports" class="secondary">Refresh</button>
+      </div>
+      <p id="flagged-count" class="hint" role="status"></p>
       <p class="hint">Select a report number to review suggested matches.</p>
       <div class="table-wrap">
         <table>
@@ -99,7 +105,7 @@
           <div class="when-where">
             <div>
               <label for="f-found_place" class="sub-label">Place</label>
-              <input id="f-found_place" name="found_place" type="text" placeholder="e.g. Bridge Road" required aria-describedby="f-found_place-error">
+              <input id="f-found_place" name="found_place" type="text" list="places" placeholder="e.g. Bridge Road" required aria-describedby="f-found_place-error">
               <p id="f-found_place-error" class="field-error"></p>
             </div>
             <div>
@@ -115,7 +121,7 @@
         </fieldset>
         <div class="field">
           <label for="f-current_location">Current location <span class="hint">Hospital, shelter or other place they are now</span></label>
-          <input id="f-current_location" name="current_location" type="text" required aria-describedby="f-current_location-error">
+          <input id="f-current_location" name="current_location" type="text" list="places" required aria-describedby="f-current_location-error">
           <p id="f-current_location-error" class="field-error"></p>
         </div>
         <div class="field">
@@ -164,8 +170,8 @@
       </form>
       <div id="admin-message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
     </section>
+    <datalist id="places"></datalist>
   </main>
 
-  <footer class="site-footer">Demo using synthetic data only.</footer>
 </body>
 </html>

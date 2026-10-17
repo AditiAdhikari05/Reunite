@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>How this runs on IBM LinuxONE · DisasterBridge</title>
+  <title>How this runs on IBM LinuxONE · Reunite</title>
   <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
 </head>
@@ -11,11 +11,11 @@
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="index.html">DisasterBridge</a>
+      <a class="brand" href="index.html">Reunite</a>
       <nav class="site-nav" aria-label="Main">
         <ul>
           <li><a href="index.html">Home</a></li>
-          <li><a href="platform.html" aria-current="page">How it runs</a></li>
+          <li><a href="platform.html" aria-current="page">How it works</a></li>
         </ul>
       </nav>
     </div>
@@ -23,47 +23,55 @@
 
   <main id="main">
     <h1>How this runs on IBM LinuxONE</h1>
-    <p class="lead">DisasterBridge runs on IBM LinuxONE, a Linux server built on the IBM Z mainframe architecture (s390x). Sensitive reports are stored and matched on the server, not in anyone's browser.</p>
+    <p class="lead">Reunite runs on IBM LinuxONE, a Linux server built on the IBM Z mainframe architecture (s390x). Reports are stored and matched on the server, not in anyone's browser.</p>
     <p id="mock-indicator"></p>
+
+    <div class="banner" role="note">All data in this demo is synthetic. Every suggested match is reviewed by a human before anyone is told.</div>
 
     <section class="card" aria-labelledby="flow-title">
       <h2 id="flow-title">What happens to a report</h2>
       <ol class="flow">
         <li>A family sends a report from this website. It goes straight to the Flask application on LinuxONE.</li>
-        <li>Authorities add people who have been found. They use a separate staff portal, accounts must be approved by an administrator, and the server checks their login on every request.</li>
-        <li>The matching engine runs on the same LinuxONE server. It compares reports and suggests possible matches, each with a score and its reasons.</li>
+        <li>Authorities record people who have been found. They use a separate staff portal, and the server checks their access on every request.</li>
+        <li>The matching engine runs on the same LinuxONE server. It ranks possible matches, each with a score and its reasons.</li>
         <li>A trained person checks every suggestion and confirms or rejects it. The software never confirms a match by itself.</li>
-        <li>Families only ever see one of three statuses: Searching, Possible match under review, or Reunited. Details about found people stay on the server.</li>
+        <li>Families only ever see a status: Searching, Possible match under review, or Reunited. Details about found people stay on the server.</li>
       </ol>
     </section>
 
-    <section class="card" aria-labelledby="bench-title">
-      <h2 id="bench-title">Matching speed: accelerator on vs off</h2>
-      <p>Pairs of reports compared per second. Longer bars are faster.</p>
+    <div id="bench-loading" class="card"><p class="loading">Loading benchmark results…</p></div>
+    <div id="bench-message" class="message" role="alert" tabindex="-1"></div>
+    <p id="bench-note" class="mock-note hidden"></p>
 
-      <div class="bench-row">
-        <div class="bench-label"><span>Accelerator on</span><span id="bench-on-value">–</span></div>
-        <div id="bench-on-track" class="bench-track" role="meter" aria-label="Accelerator on, pairs per second" aria-valuemin="0">
-          <div id="bench-on" class="bench-fill on" style="width:0"></div>
-        </div>
-      </div>
-      <div class="bench-row">
-        <div class="bench-label"><span>Accelerator off</span><span id="bench-off-value">–</span></div>
-        <div id="bench-off-track" class="bench-track" role="meter" aria-label="Accelerator off, pairs per second" aria-valuemin="0">
-          <div id="bench-off" class="bench-fill off" style="width:0"></div>
-        </div>
-      </div>
-      <p id="bench-summary"></p>
-      <p><span id="bench-note" class="mock-note"></span></p>
-      <div id="bench-message" class="message" role="alert" tabindex="-1"></div>
+    <section id="accuracy" class="card hidden" aria-labelledby="accuracy-title">
+      <h2 id="accuracy-title">Accuracy: is the right person near the top?</h2>
+      <p id="accuracy-intro"></p>
+      <div id="accuracy-bars"></div>
+    </section>
+
+    <section id="speed" class="card hidden" aria-labelledby="speed-title">
+      <h2 id="speed-title">Speed: full re-scan</h2>
+      <p id="speed-text" class="big-number"></p>
+    </section>
+
+    <section id="chip" class="card hidden" aria-labelledby="chip-title">
+      <h2 id="chip-title">LinuxONE chip results</h2>
+      <div id="chip-body"></div>
+    </section>
+
+    <section id="raw" class="card hidden" aria-labelledby="raw-title">
+      <h2 id="raw-title">Full results</h2>
+      <details>
+        <summary>Show the benchmark output exactly as reported</summary>
+        <pre id="raw-json" class="raw-json"></pre>
+      </details>
     </section>
 
     <section class="card" aria-labelledby="why-title">
       <h2 id="why-title">Why LinuxONE</h2>
-      <p>Disaster data is personal and sensitive. Keeping storage, matching and the website on one secure server means fewer copies of the data and fewer places it can leak. The app uses plain Python and static web pages, so it runs on s390x without any special build tools.</p>
+      <p>Disaster data is personal and sensitive. Keeping storage, matching and the website on one secure server means fewer copies of the data and fewer places it can leak. The app uses plain Python and static web pages, so it runs on s390x without special build tools.</p>
     </section>
   </main>
 
-  <footer class="site-footer">Demo using synthetic data only.</footer>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Authority log in · DisasterBridge</title>
+  <title>Authority log in · Reunite</title>
   <link rel="stylesheet" href="../style.css">
   <script src="../app.js" defer></script>
   <script src="authority.js" defer></script>
@@ -12,7 +12,7 @@
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="../index.html">DisasterBridge <span class="portal-tag">Authority portal</span></a>
+      <a class="brand" href="../index.html">Reunite <span class="portal-tag">Authority portal</span></a>
       <nav class="site-nav" aria-label="Main">
         <ul><li><a href="../index.html">← Home</a></li></ul>
       </nav>
@@ -49,6 +49,14 @@
             </div>
             <p id="login-password-error" class="field-error"></p>
           </div>
+          <div class="field">
+            <label for="login-pin">Access PIN <span class="hint">Given to you by your team lead. Needed for every session.</span></label>
+            <div class="pw-wrap">
+              <input id="login-pin" name="pin" type="password" inputmode="numeric" autocomplete="off" required aria-describedby="login-pin-error">
+              <button type="button" class="pw-toggle" aria-controls="login-pin" aria-pressed="false">Show</button>
+            </div>
+            <p id="login-pin-error" class="field-error"></p>
+          </div>
           <p id="login-hint" class="hint"></p>
           <div class="actions"><button type="submit">Log in</button></div>
         </form>
@@ -62,6 +70,5 @@
     </div>
   </main>
 
-  <footer class="site-footer">Demo using synthetic data only.</footer>
 </body>
 </html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report a person you found · Reunite</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body data-page="report-found">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html">Reunite</a>
+      <nav class="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="platform.html">How it works</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <p id="mock-indicator"></p>
+    <h1>Report a person you found</h1>
+    <p class="lead">No account needed. Tell us about someone who is safe but separated from their family. Rescue staff will check your report.</p>
+    <p class="restricted"><span aria-hidden="true">⚠</span><span>If someone is injured or in danger, call your local emergency number first.</span></p>
+
+    <section class="card" aria-label="Found person form">
+      <form id="public-found-form" novalidate>
+        <fieldset class="field plain-fieldset">
+          <legend>Their approximate age</legend>
+          <div class="field-row">
+            <div class="field">
+              <label for="pf-age_min">Lowest age</label>
+              <input id="pf-age_min" name="age_min" type="number" inputmode="numeric" min="0" max="120" required aria-describedby="pf-age_min-error">
+              <p id="pf-age_min-error" class="field-error"></p>
+            </div>
+            <div class="field">
+              <label for="pf-age_max">Highest age</label>
+              <input id="pf-age_max" name="age_max" type="number" inputmode="numeric" min="0" max="120" required aria-describedby="pf-age_max-error">
+              <p id="pf-age_max-error" class="field-error"></p>
+            </div>
+          </div>
+        </fieldset>
+        <div class="field-row">
+          <div class="field">
+            <label for="pf-gender">Gender</label>
+            <select id="pf-gender" name="gender" required aria-describedby="pf-gender-error">
+              <option value="">Choose…</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+              <option value="unknown">Unknown</option>
+            </select>
+            <p id="pf-gender-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="pf-height_cm">Height in cm <span class="optional">(optional)</span></label>
+            <input id="pf-height_cm" name="height_cm" type="number" inputmode="numeric" min="30" max="250" aria-describedby="pf-height_cm-error">
+            <p id="pf-height_cm-error" class="field-error"></p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="pf-hair">Hair <span class="optional">(optional)</span></label>
+          <input id="pf-hair" name="hair" type="text">
+        </div>
+        <div class="field">
+          <label for="pf-clothing">Clothing <span class="optional">(optional)</span></label>
+          <input id="pf-clothing" name="clothing" type="text">
+        </div>
+        <div class="field">
+          <label for="pf-marks">Distinguishing marks <span class="optional">(optional)</span> <span class="hint">Scars, tattoos, glasses, birthmarks</span></label>
+          <input id="pf-marks" name="marks" type="text">
+        </div>
+        <fieldset class="field plain-fieldset">
+          <legend>Where and when did you find them?</legend>
+          <div class="when-where">
+            <div>
+              <label for="pf-found_place" class="sub-label">Place</label>
+              <input id="pf-found_place" name="found_place" type="text" list="places" required aria-describedby="pf-found_place-error">
+              <p id="pf-found_place-error" class="field-error"></p>
+            </div>
+            <div>
+              <label for="pf-found_date" class="sub-label">Date</label>
+              <input id="pf-found_date" name="found_date" type="date" required aria-describedby="pf-found_date-error">
+              <p id="pf-found_date-error" class="field-error"></p>
+            </div>
+            <div>
+              <label for="pf-found_clock" class="sub-label">Time <span class="optional">(if known)</span></label>
+              <input id="pf-found_clock" name="found_clock" type="time">
+            </div>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="pf-current_location">Where are they now? <span class="hint">For example with you, at a shelter, at a hospital</span></label>
+          <input id="pf-current_location" name="current_location" type="text" list="places" required aria-describedby="pf-current_location-error">
+          <p id="pf-current_location-error" class="field-error"></p>
+        </div>
+        <div class="field">
+          <label for="pf-description">Anything else that could help <span class="optional">(optional)</span> <span class="hint">Name they gave, language, health needs</span></label>
+          <textarea id="pf-description" name="description"></textarea>
+        </div>
+
+        <h2>Your details</h2>
+        <p class="hint">So staff can call you back. Your details are not shown to families.</p>
+        <div class="field-row">
+          <div class="field">
+            <label for="pf-reporter_name">Your name</label>
+            <input id="pf-reporter_name" name="reporter_name" type="text" autocomplete="name" required aria-describedby="pf-reporter_name-error">
+            <p id="pf-reporter_name-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="pf-reporter_phone">Your phone number</label>
+            <input id="pf-reporter_phone" name="reporter_phone" type="tel" autocomplete="tel" required aria-describedby="pf-reporter_phone-error">
+            <p id="pf-reporter_phone-error" class="field-error"></p>
+          </div>
+        </div>
+        <div class="actions"><button type="submit">Send report</button></div>
+      </form>
+      <div id="public-found-message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
+    </section>
+    <datalist id="places"></datalist>
+  </main>
+
+</body>
+</html>

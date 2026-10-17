@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report status · Reunite</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body data-page="status">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html">Reunite</a>
+      <nav class="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="platform.html">How it works</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <p id="mock-indicator"></p>
+    <h1>Check a report's status</h1>
+    <p class="lead">Enter the report number you were given when the report was sent.</p>
+
+    <section class="card" aria-label="Status lookup">
+      <form id="status-form" novalidate>
+        <div class="field">
+          <label for="status-id">Report number <span class="hint">For example M12</span></label>
+          <input id="status-id" name="report_id" type="text" autocomplete="off" autocapitalize="characters" aria-describedby="status-id-error">
+          <p id="status-id-error" class="field-error"></p>
+        </div>
+        <div class="actions"><button type="submit">Check status</button></div>
+      </form>
+      <div id="status-result" class="message" role="status" aria-live="polite" tabindex="-1"></div>
+    </section>
+
+    <section class="card" aria-labelledby="meaning-title">
+      <h2 id="meaning-title">What the statuses mean</h2>
+      <dl class="status-key">
+        <dt><span class="status-pill status-searching">Searching</span></dt>
+        <dd>No likely match yet. Staff keep checking as new people are found.</dd>
+        <dt><span class="status-pill status-possible_match">Possible match under review</span></dt>
+        <dd>A trained person is checking a possible match. Nothing is confirmed yet.</dd>
+        <dt><span class="status-pill status-reunited">Reunited</span></dt>
+        <dd>Staff have confirmed the match and will contact you.</dd>
+      </dl>
+    </section>
+  </main>
+
+</body>
+</html>

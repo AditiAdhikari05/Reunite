@@ -6,12 +6,41 @@ const STAFF_ROLES = ["authority", "admin"];
 PAGES["authority-login"] = async function () {
   const box = $("#login-message");
   showExpiredNotice(box);
-  if (USE_MOCK) $("#login-hint").textContent = "Demo admin: " + DEMO_ADMIN.email + " / " + DEMO_ADMIN.password;
+  if (USE_MOCK) $("#login-hint").textContent = "Demo admin: " + DEMO_ADMIN.email + " / " + DEMO_ADMIN.password + ". Any PIN works in demo mode.";
 
   const u = await currentUser();
-  if (u && STAFF_ROLES.includes(u.role)) { location.replace("index.html"); return; }
+  if (u && STAFF_ROLES.includes(u.role) && getPin()) { location.replace("index.html"); return; }
 
-  setupLogin($("#login-form"), box, "authority", () => location.assign("index.html"));
+  const form = $("#login-form");
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    clearMessage(box);
+    const data = readForm(form, ["email", "password", "pin"]);
+    const errors = validate(form, data, ["email", "password", "pin"]);
+    if (errors.length) { showMessage(box, "error", errorSummary(form, errors)); return; }
+    await withBusy(form.querySelector("button[type=submit]"), async () => {
+      try {
+        await api("POST", "/api/auth/login", { email: data.email, password: data.password, role: "authority" });
+      } catch (e) {
+        showMessage(box, "error", e.status === 401 ? "Email or password is incorrect." : e.message);
+        return;
+      }
+      // Check the PIN with a real authority request before going in.
+      setPin(data.pin);
+      try {
+        await api("GET", "/api/missing", undefined, { auth: true });
+      } catch (e) {
+        clearPin();
+        try { await api("POST", "/api/auth/logout"); } catch (err) { /* ignore */ }
+        setFieldError(form, "pin", "This PIN was not accepted.");
+        showMessage(box, "error", e.status === 401 || e.status === 403
+          ? "The access PIN was not accepted. Please check it with your team lead." : e.message);
+        return;
+      }
+      form.reset();
+      location.assign("index.html");
+    });
+  });
 };
 
 PAGES["authority-request"] = function () {
@@ -42,6 +71,7 @@ PAGES["authority-request"] = function () {
 PAGES["authority-dashboard"] = async function () {
   const user = await requireUser(STAFF_ROLES, "login.html");
   if (!user) return;
+  if (!getPin()) { location.replace("login.html"); return; }
   const isAdmin = user.role === "admin";
   let reports = [];
   let selected = null;
@@ -51,13 +81,14 @@ PAGES["authority-dashboard"] = async function () {
   // Redirects to the login page when the session has ended.
   async function guarded(fn, box) {
     try { return await fn(); } catch (e) {
-      if (e.status === 401) goToLogin("login.html");
+      if (e.status === 401) { clearPin(); goToLogin("login.html"); }
       else if (box) showMessage(box, "error", e.message);
       throw e;
     }
   }
 
   $("#logout-button").addEventListener("click", async () => {
+    clearPin();
     try { await api("POST", "/api/auth/logout"); } catch (e) { /* ignore */ }
     location.assign("login.html");
   });
@@ -65,21 +96,34 @@ PAGES["authority-dashboard"] = async function () {
   async function loadReports() {
     const box = $("#reports-message");
     clearMessage(box);
-    reports = await guarded(() => api("GET", "/api/missing"), box);
+    reports = await guarded(() => api("GET", "/api/missing", undefined, { auth: true }), box);
+    // Reports the engine has flagged come first.
+    reports.sort((a, b) => isFlagged(b) - isFlagged(a));
     renderReports();
   }
 
+  function isFlagged(r) {
+    return r.flagged === true || normalStatus(r.status) === "possible_match";
+  }
+
   function renderReports() {
-    $("#reports-body").replaceChildren(...reports.map(r => el("tr", { class: r.id === selected ? "selected" : null }, [
+    $("#reports-body").replaceChildren(...reports.map(r => el("tr", {
+      class: [isFlagged(r) ? "flagged" : "", r.id === selected ? "selected" : ""].join(" ").trim() || null,
+    }, [
       el("td", null, [el("button", {
         class: "link", text: r.id,
-        "aria-label": "Review matches for report " + r.id,
+        "aria-label": "Review matches for report " + r.id + (isFlagged(r) ? ", flagged by the engine" : ""),
         onclick: () => openReview(r.id),
       })]),
-      el("td", { text: r.summary || summarize(r) }),
+      el("td", null, [
+        isFlagged(r) ? el("span", { class: "flag-badge", text: "⚑ Flagged" }) : null,
+        el("span", { text: r.summary || summarize(r) }),
+      ]),
       el("td", null, [statusPill(r.status)]),
     ])));
     show($("#reports-empty"), reports.length === 0);
+    const n = reports.filter(isFlagged).length;
+    $("#flagged-count").textContent = n ? n + " report" + (n === 1 ? "" : "s") + " flagged by the matching engine, shown first." : "";
   }
 
   /* Admin: access requests and authority accounts */
@@ -173,7 +217,7 @@ PAGES["authority-dashboard"] = async function () {
     joinDateTime(data, "found", "found_time");
     await withBusy(fForm.querySelector("button[type=submit]"), async () => {
       try {
-        const res = await guarded(() => api("POST", "/api/found", data), fMsg);
+        const res = await guarded(() => api("POST", "/api/found", data, { auth: true }), fMsg);
         fForm.reset();
         showMessage(fMsg, "success", "Found person saved as " + res.id + ". Match suggestions will update.");
         await loadReports();
@@ -196,11 +240,11 @@ PAGES["authority-dashboard"] = async function () {
     list.replaceChildren(el("p", { text: "Loading suggestions…" }));
     let data;
     try {
-      data = await guarded(() => api("GET", "/api/matches/" + encodeURIComponent(id)), box);
+      data = await guarded(() => api("GET", "/api/matches/" + encodeURIComponent(id), undefined, { auth: true }), box);
     } catch (e) { list.replaceChildren(); return; }
 
-    const report = reports.find(r => r.id === id) || {};
-    const cands = data.candidates || [];
+    const report = data.missing || reports.find(r => r.id === id) || {};
+    const cands = (data.candidates || []).slice(0, 10);
     list.replaceChildren(...(cands.length
       ? cands.map((c, i) => candidateCard(id, report, c, i + 1))
       : [el("p", { text: "No suggested matches yet. Suggestions appear as found people are added." })]));
@@ -220,28 +264,52 @@ PAGES["authority-dashboard"] = async function () {
     return rows;
   }
 
+  // Normalises the candidate's decision to "confirmed", "rejected" or null.
+  function decisionOf(c) {
+    const d = String(c.decision || "");
+    if (d.startsWith("confirm")) return "confirmed";
+    if (d.startsWith("reject")) return "rejected";
+    return null;
+  }
+
   function candidateCard(mid, report, c, rank) {
     const score = Math.max(0, Math.min(100, Math.round(c.score)));
     const headingId = "cand-" + c.found_id;
     const box = el("div", { class: "message", role: "status", tabindex: "-1" });
+    const decision = decisionOf(c);
 
-    async function decide(decision, btn) {
-      if (decision === "confirm" && !confirm("Confirm that report " + mid + " and found person " + c.found_id +
+    async function decide(action, btn) {
+      if (action === "confirm" && !confirm("Confirm that report " + mid + " and found person " + c.found_id +
           " are the same person? Only confirm after checking in person or with documents.")) return;
       await withBusy(btn, async () => {
         try {
-          await guarded(() => api("POST", "/api/matches/" + encodeURIComponent(mid) + "/decision",
-            { found_id: c.found_id, decision }), box);
+          await api("POST", "/api/matches/" + encodeURIComponent(mid) + "/decision",
+            { found_id: c.found_id, decision: action }, { auth: true });
+        } catch (e) {
+          if (e.status === 401) { clearPin(); goToLogin("login.html"); return; }
+          showMessage(box, "error", e.status === 409
+            ? ["Cannot confirm: ", el("strong", { text: e.message }),
+               " Check the other report first. If that match was wrong, undo it there."]
+            : e.message);
+          return;
+        }
+        try {
           await loadReports();
           await openReview(mid, true);
-          showMessage($("#review-message"), "success",
-            decision === "confirm" ? "Match with " + c.found_id + " confirmed. The family will see “Reunited”."
-              : "Suggestion " + c.found_id + " rejected.");
-        } catch (e) { /* already shown */ }
+        } catch (e) { return; }
+        const done = { confirm: "Match with " + c.found_id + " confirmed. The family will see “Reunited”.",
+          reject: "Suggestion " + c.found_id + " rejected.", undo: "Decision on " + c.found_id + " undone." };
+        showMessage($("#review-message"), "success", done[action]);
       });
     }
 
-    return el("article", { class: "card candidate", "aria-labelledby": headingId }, [
+    const buttons = decision
+      ? [el("span", { class: "decision-tag " + decision, text: decision === "confirmed" ? "✓ Confirmed" : "Rejected" }),
+         el("button", { type: "button", class: "secondary", text: "Undo", onclick: e => decide("undo", e.currentTarget) })]
+      : [el("button", { type: "button", class: "confirm", text: "Confirm match", onclick: e => decide("confirm", e.currentTarget) }),
+         el("button", { type: "button", class: "reject", text: "Reject", onclick: e => decide("reject", e.currentTarget) })];
+
+    return el("article", { class: "card candidate" + (decision ? " decided-" + decision : ""), "aria-labelledby": headingId }, [
       el("div", { class: "candidate-head" }, [
         el("h3", { id: headingId, text: "#" + rank + " · Found person " + c.found_id }),
         el("span", { class: "score-label", text: "Score " + score + " / 100" }),
@@ -250,9 +318,12 @@ PAGES["authority-dashboard"] = async function () {
         class: "score-bar", role: "meter", "aria-valuemin": "0", "aria-valuemax": "100",
         "aria-valuenow": String(score), "aria-label": "Match score",
       }, [el("div", { class: "score-fill", style: "width:" + score + "%" })]),
+      c.claimed_by ? el("p", { class: "claimed-note", text: "Already claimed by report " + c.claimed_by + "." }) : null,
+      (c.found && c.found.source === "public")
+        ? el("p", { class: "public-note", text: "Reported by a member of the public. Not yet verified by staff." }) : null,
       el("h4", { text: "Why this was suggested" }),
       el("ul", { class: "reasons" }, (c.reasons || []).map(r => el("li", null, [
-        el("span", { class: "mark " + (r.matched ? "yes" : "no"), "aria-hidden": "true", text: r.matched ? "✓" : "✗" }),
+        el("span", { class: "mark " + (r.matched ? "yes" : "no"), "aria-hidden": "true", text: r.matched ? "✓" : "–" }),
         el("span", { class: "sr-only", text: r.matched ? "Matches: " : "Does not match: " }),
         el("span", { text: r.label }),
       ]))),
@@ -260,13 +331,20 @@ PAGES["authority-dashboard"] = async function () {
         el("section", { "aria-label": "Missing report " + mid }, [el("h4", { text: "Missing report " + mid }), recordList(personRows(report, "missing"))]),
         el("section", { "aria-label": "Found record " + c.found_id }, [el("h4", { text: "Found record " + c.found_id }), recordList(personRows(c.found || {}, "found"))]),
       ]),
-      el("div", { class: "actions" }, [
-        el("button", { type: "button", class: "confirm", text: "Confirm match", onclick: e => decide("confirm", e.currentTarget) }),
-        el("button", { type: "button", class: "reject", text: "Reject", onclick: e => decide("reject", e.currentTarget) }),
-      ]),
+      el("div", { class: "actions" }, buttons),
       box,
     ]);
   }
+
+  /* Hidden demo helper: fills the found form with a live-demo case. */
+  renderDemoPanel($("#demo-panel"), "Fill found record", c => {
+    fForm.reset();
+    fillForm(fForm, c.found, { found_time: "__skip" });
+    fillDateTime(fForm, "found", c.found.found_time);
+    $("#found-title").scrollIntoView({ behavior: "smooth", block: "start" });
+    showMessage(fMsg, "success", "Filled with demo case " + (c.title || c.id) + ". Check it, then press “Save found person”.");
+  });
+  fillPlaces($("#places"));
 
   const resetBtn = $("#mock-reset");
   if (USE_MOCK && resetBtn) {
@@ -277,6 +355,16 @@ PAGES["authority-dashboard"] = async function () {
       location.reload();
     });
   }
+
+  $("#refresh-reports").addEventListener("click", e => withBusy(e.currentTarget, async () => {
+    try { await loadReports(); if (selected) await openReview(selected, true); } catch (err) { /* already shown */ }
+  }));
+  onDataMaybeChanged(async () => {
+    try {
+      await loadReports();
+      if (isAdmin) await loadRequests();
+    } catch (e) { /* already shown */ }
+  });
 
   try { await loadReports(); } catch (e) { return; }
   show($("#main"), true);

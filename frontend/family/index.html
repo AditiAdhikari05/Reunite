@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My family · DisasterBridge</title>
+  <title>My family · Reunite</title>
   <link rel="stylesheet" href="../style.css">
   <script src="../app.js" defer></script>
   <script src="family.js" defer></script>
@@ -12,7 +12,7 @@
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="index.html">DisasterBridge <span class="portal-tag">Family portal</span></a>
+      <a class="brand" href="index.html">Reunite <span class="portal-tag">Family portal</span></a>
       <div class="user-menu">
         <span class="who" id="welcome-name"></span>
         <button type="button" id="logout-button" class="secondary">Log out</button>
@@ -23,6 +23,8 @@
   <main id="main" class="hidden">
     <p id="mock-indicator"></p>
     <h1 id="family-heading" tabindex="-1">Welcome, <span id="welcome-first"></span></h1>
+
+    <div id="demo-panel" class="card demo-panel hidden" aria-label="Demo helper"></div>
 
     <section class="card" aria-labelledby="my-reports-title">
       <h2 id="my-reports-title">My reports</h2>
@@ -160,7 +162,7 @@
           <div class="when-where">
             <div>
               <label for="last_seen_place" class="sub-label">Place</label>
-              <input id="last_seen_place" name="last_seen_place" type="text" placeholder="e.g. Riverside Market" required aria-describedby="last_seen_place-error">
+              <input id="last_seen_place" name="last_seen_place" type="text" list="places" placeholder="e.g. Riverside Market" required aria-describedby="last_seen_place-error">
               <p id="last_seen_place-error" class="field-error"></p>
             </div>
             <div>
@@ -190,8 +192,8 @@
       </form>
       <div id="missing-message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
     </section>
+    <datalist id="places"></datalist>
   </main>
 
-  <footer class="site-footer">Demo using synthetic data only.</footer>
 </body>
 </html>

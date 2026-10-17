@@ -1,25 +1,26 @@
-# DisasterBridge-AI
+# Reunite
 
 A prototype for the IBM Z Datathon that helps reunite families after a disaster.
 
 - **Families** report people who are missing.
 - **Authorities** (rescue, shelter, hospital and police staff) record people they have found.
-- A **matching engine** suggests which missing and found records may be the same person, with a score and the reasons for it.
-- **A human must confirm every match.** Families only ever see a status, never details of found people.
+- **Anyone** can report a person they found, without an account.
+- A **matching engine** ranks which missing and found records may be the same person, with a score and the reasons for it.
+- **A human must confirm every match.** Families only ever see a status, never match details or scores.
 
-The app is designed to run on **IBM LinuxONE** (Linux on IBM Z, `s390x`). The Flask API and the matching engine run on the server, so sensitive data stays there.
+The app runs on **IBM LinuxONE** (Linux on IBM Z, `s390x`). The Flask API and the matching engine run on the server, so sensitive data stays there.
 
 > Demo using synthetic data only. Do not enter real personal information.
 
 ## Current status
 
-| Part | Status |
-|---|---|
-| Frontend (`frontend/`) | Done. Runs in **mock mode** with synthetic data |
-| Flask backend | In progress (backend teammate) |
-| Matching engine | In progress (AI teammate). The frontend shows mock scores for now |
-| LinuxONE deployment | Not yet deployed |
-| Benchmark numbers | **Illustrative placeholders, not measured results** |
+| Part | Owner | Status |
+|---|---|---|
+| Frontend (`frontend/`) | Aditi | Done. Runs in **mock mode** with synthetic data |
+| Flask backend | Swastik | In progress. Planned at `http://148.100.76.31:5000` (not reachable yet) |
+| Account routes (sign-up, login, admin) | Swastik | **Needed.** Not in the original backend contract |
+| Matching engine | Team | In progress. The frontend shows mock scores for now |
+| Benchmark numbers | Team | **Placeholders, not measured results** |
 
 ## Run the frontend locally
 
@@ -30,60 +31,44 @@ cd frontend
 python3 -m http.server 5500
 ```
 
-Then open <http://localhost:5500/>.
-
-Use the local server instead of double-clicking the HTML files. Pages opened as `file://` cannot share demo data between the family and authority portals.
+Then open <http://localhost:5500/>. Use the local server instead of double-clicking the HTML files, because pages opened as `file://` cannot share demo data.
 
 ### Demo logins (mock mode only)
 
-| Portal | Email | Password |
-|---|---|---|
-| Family | `family@disasterbridge.demo` | `demo-family-2026` |
-| Authority (admin) | `admin@disasterbridge.demo` | `demo-admin-2026` |
-| Authority (officer) | `officer@disasterbridge.demo` | `demo-officer-2026` |
+| Portal | Email | Password | PIN |
+|---|---|---|---|
+| Family | `family@reunite.demo` | `demo-family-2026` | – |
+| Authority (admin) | `admin@reunite.demo` | `demo-admin-2026` | any number in mock mode |
+| Authority (officer) | `officer@reunite.demo` | `demo-officer-2026` | any number in mock mode |
 
-These accounts are fake and exist only inside `app.js` for the demo. The real backend must keep its own accounts, with hashed passwords.
+These accounts are fake and exist only inside `app.js`. The **real PIN** comes from Swastik. It is typed in at login and **never stored in the code**.
 
-### Try the full flow
+## Live demo script (for the judges)
 
-1. Log in to the **family portal** and report someone missing. Note the report number, for example `M13`.
-2. Log in to the **authority portal** in another tab. The new report appears in the table.
-3. Click a report to see suggested matches. Confirm one.
-4. Back in the family portal, the report now shows **Reunited**.
-5. In the authority portal, use **Reset demo data** to start again.
+Add `?demo=1` to a page address to show the hidden **Demo helper** panel. It lists only the cases marked `good_for_live_demo` from `GET /api/demo-cases`.
 
-In mock mode, data is saved in your browser's local storage, so it only exists in that browser. Logins last for the current tab only.
+1. Family portal: open `family/index.html?demo=1`, click **Fill missing report**, then **Send report**. Note the number, for example `M13`.
+2. Open `status.html?id=M13`. It shows **Searching**.
+3. Authority portal: open `authority/index.html?demo=1`, click **Fill found record** for the same case, then **Save found person**.
+4. The status page flips to **Possible match under review**. It refreshes itself every 15 seconds. The report is flagged ⚑ in the authority table.
+5. Open the report, check the reasons, and **Confirm**. The status becomes **Reunited**. **Undo** reverses it.
+
+In mock mode, **Reset demo data** (authority dashboard) starts again from scratch.
 
 ## Folder structure
 
 ```
 frontend/
-  index.html               Welcome page: choose family or authority
-  platform.html            "How this runs on IBM LinuxONE" and benchmark bars
-  app.js                   Shared code: USE_MOCK switch, API helper, mock backend, form helpers
-  style.css                Shared styles (both portals)
-  family/                  Family portal
-    login.html  signup.html  index.html (dashboard)  family.js
-  authority/               Authority portal
-    login.html  request-access.html  index.html (dashboard)  authority.js
-  authority.html           Redirects to authority/login.html (old link)
+  index.html               Welcome page: family / authority / "Report a person found"
+  status.html              Public status check by report number (no login)
+  report-found.html        Public found-person report (no login)
+  platform.html            "How it works": LinuxONE explanation and benchmark results
+  app.js                   Shared code: USE_MOCK switch, API helper, mock backend, public pages
+  style.css                Shared styles
+  family/                  Family portal: login, signup, dashboard (family.js)
+  authority/               Authority portal: login (email, password, PIN), request access, dashboard (authority.js)
+  authority.html           Redirects to authority/login.html
 ```
-
-### Pages
-
-**Family portal (`family/`)**
-- Sign up (name, email, phone, password, consent) and log in.
-- **My family**: save details of family members in advance.
-- **Report a missing person**: choose a saved family member to fill in the form, or describe someone else.
-- **My reports**: each report shows only one of *Searching*, *Possible match under review* or *Reunited*.
-
-**Authority portal (`authority/`)**
-- Log in only. There is no open sign-up. New staff use **Request access**, and the administrator approves or declines each request.
-- A table of missing-person reports.
-- **Add a found person**.
-- **Match review**: ranked candidates with a score bar, ✓/✗ reasons, a side-by-side comparison, and Confirm and Reject buttons.
-- A permanent banner: *Scores are suggestions. A human must verify every match.*
-- **Admin only**: approve access requests, add authority accounts directly, and remove authority accounts.
 
 ## Mock mode vs live backend
 
@@ -93,66 +78,49 @@ The first line of `frontend/app.js` is:
 const USE_MOCK = true;
 ```
 
-- `true`: every API call is answered by the synthetic mock inside `app.js`. No server is needed.
-- `false`: calls go to the real Flask API with `fetch("/api/...")`, using relative URLs.
-
-Switch it to `false` only once the Flask endpoints below are working. Then run the full flow again end to end.
+Keep it `true` until Swastik confirms the server is up. Then set it to `false`, upload the folder, and run the live demo script end to end. Send Swastik any response that does not match the contract below, with the request and response pasted in.
 
 ## API contract
 
-All request and response bodies are JSON. Errors return `{"error": "message"}` with a 4xx status. Dates are ISO strings like `"2026-10-17T14:30"`.
+All bodies are JSON. Errors return `{"error": "message"}` with a 4xx status. Dates are ISO strings like `"2026-10-17T14:30"`. All URLs are relative (`fetch("/api/...")`).
 
-Login uses a **server session cookie**. The frontend never stores passwords or tokens. The backend must check the user's role on every restricted route, not just hide things in the UI.
+Authority routes send **`X-Auth-Pin: <pin>`**. Account routes use a **session cookie**.
 
-### Original routes
+### Core routes (from Swastik's brief)
+
+| Method | Route | Who | Request / response |
+|---|---|---|---|
+| GET | `/api/places` | anyone | List of place names (strings, or objects with `name`). Feeds the place autocomplete |
+| POST | `/api/missing` | family | Missing report (below). Returns `{id, status}` |
+| GET | `/api/status/<id>` | anyone | `{id, status, authority_contact}`. `status` is `searching`, `possible_match` or `reunited`. **No match details** |
+| POST | `/api/found` | authority + PIN | Found record. Returns `{id}` |
+| GET | `/api/missing` | authority + PIN | All reports with `id`, `status`, `summary` and **`flagged`** (true if the engine flagged it) |
+| GET | `/api/matches/<id>` | authority + PIN | `{missing_id, missing?, candidates: [...]}`. The frontend shows the top 10 |
+| POST | `/api/matches/<id>/decision` | authority + PIN | `{found_id, decision: "confirm" \| "reject" \| "undo"}`. **409** if that found person is already claimed by another report |
+| GET | `/api/demo-cases` | anyone | `[{id, title, good_for_live_demo, missing: {...}, found: {...}}]` |
+| GET | `/api/benchmark` | anyone | See below |
+
+Each candidate: `{found_id, score (0–100), reasons: [{label, matched}], found: {...}, decision: "confirmed" | "rejected" | null, claimed_by: "M12" | null}`.
+
+### Routes added by the frontend (Swastik to build)
 
 | Method | Route | Who | Purpose |
 |---|---|---|---|
-| POST | `/api/missing` | family | Create a missing report. Can include `member_id` |
-| GET | `/api/status/<id>` | anyone | Public status only: `{"id", "status"}` |
-| POST | `/api/found` | authority | Create a found record |
-| GET | `/api/missing` | authority | List all missing reports (full records, with `id`, `status`, `summary`) |
-| GET | `/api/matches/<missing_id>` | authority | Ranked candidates |
-| POST | `/api/matches/<missing_id>/decision` | authority | `{"found_id": "F7", "decision": "confirm" \| "reject"}` |
-| GET | `/api/benchmark` | anyone | Accelerator on and off timings |
-
-The `status` value must be exactly `searching`, `under_review` or `reunited`.
-
-### Account routes
-
-| Method | Route | Who | Purpose |
-|---|---|---|---|
-| POST | `/api/auth/signup` | anyone | `{name, email, phone, password}` creates a **family** account and logs in. Returns `{user}` |
-| POST | `/api/auth/login` | anyone | `{email, password, role: "family" \| "authority"}`. Returns `{user}`. A pending authority gets 403 |
+| POST | `/api/public/found` | anyone | Found-person report from the public. Adds `reporter_name`, `reporter_phone`. Stored with `source: "public"` |
+| POST | `/api/auth/signup` | anyone | `{name, email, phone, password}` creates a **family** account and logs in |
+| POST | `/api/auth/login` | anyone | `{email, password, role: "family" \| "authority"}`. A pending authority gets 403 |
 | POST | `/api/auth/logout` | logged in | Ends the session |
-| GET | `/api/auth/me` | logged in | `{user: {email, name, role}}`, or 401 |
-| POST | `/api/auth/authority/request` | anyone | `{name, email, agency, position, staff_id, reason, password}` creates a **pending** request |
+| GET | `/api/auth/me` | logged in | `{user: {email, name, role}}` or 401 |
+| POST | `/api/auth/authority/request` | anyone | `{name, email, agency, position, staff_id, reason, password}` creates a pending request |
+| GET / POST | `/api/family/members` | family | List or add family members |
+| DELETE | `/api/family/members/<id>` | family | Remove a member |
+| GET | `/api/family/reports` | family | `[{id, status, member_name, last_seen_place, last_seen_time}]` |
+| GET | `/api/admin/requests` | admin | Pending access requests |
+| POST | `/api/admin/requests/<email>/approve` or `/reject` | admin | Approve or decline |
+| GET / POST | `/api/admin/authorities` | admin | List, or add `{name, email, password}` |
+| DELETE | `/api/admin/authorities/<email>` | admin | Remove access |
 
-### Family routes
-
-| Method | Route | Purpose |
-|---|---|---|
-| GET | `/api/family/members` | This family's members, each with `report_id` and `status` if reported |
-| POST | `/api/family/members` | `{name, relationship, age, gender, height_cm, hair, marks, notes}` |
-| DELETE | `/api/family/members/<id>` | Remove a member |
-| GET | `/api/family/reports` | `[{id, status, member_name, last_seen_place, last_seen_time}]` |
-
-### Admin routes (role `admin` only)
-
-| Method | Route | Purpose |
-|---|---|---|
-| GET | `/api/admin/requests` | Pending access requests |
-| POST | `/api/admin/requests/<email>/approve` | Turn the request into an authority account |
-| POST | `/api/admin/requests/<email>/reject` | Delete the request |
-| GET | `/api/admin/authorities` | Authority and admin accounts |
-| POST | `/api/admin/authorities` | `{name, email, password}` adds an authority directly |
-| DELETE | `/api/admin/authorities/<email>` | Remove an authority account |
-
-Roles are `family`, `authority`, `admin` and `pending`. An admin can do everything an authority can.
-
-### Example bodies
-
-Missing report (`POST /api/missing`):
+### Missing report body
 
 ```json
 {
@@ -166,42 +134,23 @@ Missing report (`POST /api/missing`):
 }
 ```
 
-Found records use `found_place`, `found_time` and `current_location` instead of the "last seen" fields, and have no `contact` field.
+Found records use `found_place`, `found_time` and `current_location` instead of the "last seen" fields, and have no `contact`.
 
-Candidates (`GET /api/matches/M12`):
+### Benchmark format the page expects
 
 ```json
 {
-  "missing_id": "M12",
-  "candidates": [{
-    "found_id": "F7", "score": 87,
-    "reasons": [
-      {"label": "Age ranges overlap", "matched": true},
-      {"label": "Clothing differs (red jacket vs blue coat)", "matched": false}
-    ],
-    "found": {"age_min": 30, "age_max": 36, "gender": "female", "clothing": "blue coat",
-              "found_place": "Bridge Road", "found_time": "2026-10-17T00:10",
-              "current_location": "City Shelter 2"}
-  }]
+  "note": "free text, shown as-is",
+  "accuracy": { "cases": 200, "engine": {"top1": 0.78, "top5": 0.94}, "keyword": {"top1": 0.41, "top5": 0.66} },
+  "speed": { "pairs": 40000, "full_rescan_seconds": 1.9 },
+  "chip": { "on": {"seconds": 1.9}, "off": {"seconds": 2.0}, "note": "free text, shown as-is" }
 }
 ```
 
-## Notes for the backend
-
-- Serve the whole `frontend/` folder, including the `family/` and `authority/` subfolders, as static files from Flask.
-- Use a secure, httpOnly session cookie, and store passwords hashed (for example with `werkzeug.security`).
-- Enforce roles on the server for every family, authority and admin route.
-- Never return found-person details or reviewer data from family routes.
-- Create the real admin account on the server. Never put real credentials in the frontend or in Git.
-- Keep Flask's debug server for local development only. Use a proper WSGI server on LinuxONE.
-
-## Delivery
-
-Zip the `frontend/` folder and upload it to the team's `shared` folder with the Jupyter file browser. No server keys are needed.
+Fractions (0–1) and percentages both work. Any section that is missing shows "not available yet". The page also shows the **full raw output**, so nothing is hidden or reworded, including chip results that didn't help.
 
 ## Not done yet
 
-- Real Flask backend and database
-- Real matching engine (the mock uses a simple stand-in scorer)
-- Measured LinuxONE benchmark numbers
-- Password reset ("Forgot password") and email notifications
+- Real backend, including the account routes above
+- Real matching engine and measured benchmark numbers
+- Password reset and email notifications

@@ -170,6 +170,7 @@ PAGES["family-dashboard"] = async function () {
           el("p", { text: "Your report number is:" }),
           el("span", { class: "report-id", text: res.id }),
           el("p", null, [el("strong", { text: "Save this number." }), " You can also see this report under “My reports” whenever you log in."]),
+          el("a", { class: "button", href: "../status.html?id=" + encodeURIComponent(res.id), text: "View status page" }),
         ]);
         await Promise.all([loadMembers(), loadReports()]);
       } catch (e) {
@@ -188,12 +189,25 @@ PAGES["family-dashboard"] = async function () {
     show($("#reports-empty"), reports.length === 0);
     show($("#reports-table"), reports.length > 0);
     $("#reports-body").replaceChildren(...reports.map(r => el("tr", null, [
-      el("td", { text: r.id }),
+      el("td", null, [el("a", { href: "../status.html?id=" + encodeURIComponent(r.id), text: r.id,
+        "aria-label": "Status page for report " + r.id })]),
       el("td", { text: r.member_name || "—" }),
       el("td", { text: [r.last_seen_place, formatTime(r.last_seen_time)].filter(Boolean).join(", ") }),
       el("td", null, [statusPill(r.status)]),
     ])));
   }
 
+  /* Hidden demo helper: fills the report form with a live-demo case. */
+  renderDemoPanel($("#demo-panel"), "Fill missing report", c => {
+    form.reset();
+    fillForm(form, c.missing, { last_seen_time: "__skip" });
+    fillDateTime(form, "last_seen", c.missing.last_seen_time);
+    $("#report-title").scrollIntoView({ behavior: "smooth", block: "start" });
+    showMessage(msg, "success", "Filled with demo case " + (c.title || c.id) + ". Check it, then press “Send report”.");
+  });
+  fillPlaces($("#places"));
+
+  // Statuses change when staff confirm a match, so refresh when that may have happened.
+  onDataMaybeChanged(() => Promise.all([loadMembers(), loadReports()]));
   await Promise.all([loadMembers(), loadReports()]);
 };

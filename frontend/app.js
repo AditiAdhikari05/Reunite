@@ -1,6 +1,6 @@
 const USE_MOCK = true;
 
-/* DisasterBridge-AI frontend logic. Plain JavaScript, no build step.
+/* Reunite frontend logic. Plain JavaScript, no build step.
    When USE_MOCK is true, every API call is answered by the synthetic mock
    below. Set it to false once the Flask backend serves /api/*.
 
@@ -10,9 +10,14 @@ const USE_MOCK = true;
 
 const STATUS_LABELS = {
   searching: "Searching",
-  under_review: "Possible match under review",
+  possible_match: "Possible match under review",
   reunited: "Reunited",
 };
+
+// Accepts older status names too, so the page never shows a raw code.
+function normalStatus(s) {
+  return s === "under_review" ? "possible_match" : s;
+}
 
 /* ---------- Small DOM helpers (never inject user text as HTML) ---------- */
 
@@ -55,6 +60,7 @@ function formatTime(iso) {
 }
 
 function statusPill(status, big) {
+  status = normalStatus(status);
   return el("span", {
     class: "status-pill status-" + status + (big ? " status-big" : ""),
     text: STATUS_LABELS[status] || status,
@@ -69,11 +75,27 @@ class ApiError extends Error {
   constructor(message, status) { super(message); this.status = status; }
 }
 
-async function api(method, path, body) {
-  if (USE_MOCK) return mockApi(method, path, body);
+/* The authority PIN is typed in at login and kept only for this browser tab.
+   It is never written into the code. */
+const PIN_KEY = "db_auth_pin";
+function getPin() {
+  try { return sessionStorage.getItem(PIN_KEY) || ""; } catch (e) { return ""; }
+}
+function setPin(pin) {
+  try { sessionStorage.setItem(PIN_KEY, pin); } catch (e) { /* ignore */ }
+}
+function clearPin() {
+  try { sessionStorage.removeItem(PIN_KEY); } catch (e) { /* ignore */ }
+}
+
+// opts.auth = true sends the authority PIN as the X-Auth-Pin header.
+async function api(method, path, body, opts) {
+  const auth = !!(opts && opts.auth);
+  if (USE_MOCK) return mockApi(method, path, body, auth ? getPin() : "");
 
   const headers = { Accept: "application/json" };
   if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (auth) headers["X-Auth-Pin"] = getPin();
 
   let res;
   try {
@@ -101,11 +123,11 @@ async function api(method, path, body) {
    Demo logins below are fake and only exist in mock mode. The real backend
    must keep its own accounts with hashed passwords. */
 
-const MOCK_KEY = "db_mock_state_v3";
+const MOCK_KEY = "reunite_mock_state_v5";
 const MOCK_SESSION_KEY = "db_mock_session";
 
-const DEMO_ADMIN = { email: "admin@disasterbridge.demo", password: "demo-admin-2026" };
-const DEMO_FAMILY = { email: "family@disasterbridge.demo", password: "demo-family-2026" };
+const DEMO_ADMIN = { email: "admin@reunite.demo", password: "demo-admin-2026" };
+const DEMO_FAMILY = { email: "family@reunite.demo", password: "demo-family-2026" };
 
 function mockSeed() {
   return {
@@ -114,7 +136,7 @@ function mockSeed() {
     nextMember: 3,
     users: {
       [DEMO_ADMIN.email]: { name: "Demo Admin", role: "admin", password: DEMO_ADMIN.password },
-      "officer@disasterbridge.demo": { name: "Sam Officer", role: "authority", password: "demo-officer-2026" },
+      "officer@reunite.demo": { name: "Sam Officer", role: "authority", password: "demo-officer-2026" },
       [DEMO_FAMILY.email]: { name: "Demo Family", role: "family", password: DEMO_FAMILY.password, phone: "555-0100" },
       "riya.chen@cityfire.demo": {
         name: "Riya Chen", role: "pending", password: "demo-pending-2026",
@@ -183,8 +205,7 @@ function mockSeed() {
         description: "Found near the bridge, wrapped in a borrowed coat.",
       },
     },
-    rejected: {},   // { M12: ["F6"] }
-    confirmed: {},  // { M12: "F7" }
+    decisions: {},  // { M12: { F7: "confirmed", F6: "rejected" } }
     // Hand-written reasons from the team brief for the headline demo pair.
     canned: {
       "M12|F7": {
@@ -203,12 +224,13 @@ function mockSeed() {
 
 let mockState = null;
 
+// Re-reads storage on every call so a report saved in another tab (for
+// example the family portal) shows up here straight away.
 function mockLoad() {
-  if (mockState) return mockState;
   try {
     const raw = localStorage.getItem(MOCK_KEY);
     if (raw) mockState = JSON.parse(raw);
-  } catch (e) { /* storage unavailable */ }
+  } catch (e) { /* storage unavailable: keep the in-memory copy */ }
   if (!mockState) mockState = mockSeed();
   return mockState;
 }
@@ -286,24 +308,88 @@ function mockScore(m, f) {
   return { score: Math.min(100, score), reasons };
 }
 
+const MOCK_PLACES = [
+  "Bridge Road", "Central Library", "City Shelter 1", "City Shelter 2", "Elm Street bus shelter",
+  "Elm Street flats", "General Hospital", "Harbour Station", "North Primary School",
+  "Riverside Market", "Station Square",
+];
+
+// Synthetic live-demo pairs: submit the missing report (status stays
+// "searching"), then add the found record (status flips to "possible_match").
+const MOCK_DEMO_CASES = [
+  {
+    id: "D1", title: "Older man near the harbour", good_for_live_demo: true,
+    missing: {
+      age_min: 68, age_max: 74, gender: "male", height_cm: 170, hair: "white, short",
+      clothing: "brown raincoat", marks: "white beard, hearing aid", last_seen_place: "Harbour Station",
+      last_seen_time: "2026-10-17T07:30", description: "Went to check on his boat before the storm.",
+      contact: "555-0140",
+    },
+    found: {
+      age_min: 65, age_max: 75, gender: "male", height_cm: 172, hair: "white",
+      clothing: "brown raincoat, wet", marks: "white beard", found_place: "Bridge Road",
+      found_time: "2026-10-17T11:05", current_location: "General Hospital",
+      description: "Hypothermic but awake. Says his name is Tom.",
+    },
+  },
+  {
+    id: "D2", title: "Girl with a pink backpack", good_for_live_demo: true,
+    missing: {
+      age_min: 10, age_max: 12, gender: "female", height_cm: 142, hair: "brown, braided",
+      clothing: "school uniform, pink backpack", marks: "freckles", last_seen_place: "North Primary School",
+      last_seen_time: "2026-10-16T15:00", description: "Walked home alone after school.",
+      contact: "555-0141",
+    },
+    found: {
+      age_min: 9, age_max: 12, gender: "female", height_cm: 140, hair: "brown braids",
+      clothing: "pink backpack", marks: "freckles", found_place: "Station Square",
+      found_time: "2026-10-16T19:40", current_location: "City Shelter 1",
+      description: "Calm, knows her street name.",
+    },
+  },
+  {
+    id: "D3", title: "Ambiguous adult (not for live demo)", good_for_live_demo: false,
+    missing: {
+      age_min: 25, age_max: 45, gender: "unknown", clothing: "dark jacket", last_seen_place: "Station Square",
+      last_seen_time: "2026-10-16T20:00", description: "Very little information.", contact: "555-0142",
+    },
+    found: {
+      age_min: 30, age_max: 40, gender: "male", clothing: "black jacket", found_place: "Station Square",
+      found_time: "2026-10-16T22:00", current_location: "City Shelter 1", description: "",
+    },
+  },
+];
+
+function mockDecision(state, mid, fid) {
+  return (state.decisions[mid] || {})[fid] || null;
+}
+
+// Report that has confirmed this found person, if any.
+function mockClaimedBy(state, fid) {
+  for (const [mid, d] of Object.entries(state.decisions)) if (d[fid] === "confirmed") return mid;
+  return null;
+}
+
 function mockCandidates(state, mid) {
   const m = state.missing[mid];
-  const rejected = state.rejected[mid] || [];
-  const takenFound = new Set(Object.values(state.confirmed));
   const list = [];
   for (const [fid, f] of Object.entries(state.found)) {
-    if (rejected.includes(fid)) continue;
-    if (takenFound.has(fid) && state.confirmed[mid] !== fid) continue;
     const r = state.canned[mid + "|" + fid] || mockScore(m, f);
     if (r.score < 40) continue;
-    list.push({ found_id: fid, score: r.score, reasons: r.reasons, found: f });
+    const claimed = mockClaimedBy(state, fid);
+    list.push({
+      found_id: fid, score: r.score, reasons: r.reasons, found: f,
+      decision: mockDecision(state, mid, fid),
+      claimed_by: claimed && claimed !== mid ? claimed : null,
+    });
   }
-  return list.sort((a, b) => b.score - a.score);
+  return list.sort((a, b) => b.score - a.score).slice(0, 10);
 }
 
 function mockStatus(state, mid) {
-  if (state.confirmed[mid]) return "reunited";
-  return mockCandidates(state, mid).some(c => c.score >= 60) ? "under_review" : "searching";
+  if (Object.values(state.decisions[mid] || {}).includes("confirmed")) return "reunited";
+  return mockCandidates(state, mid).some(c => c.score >= 60 && c.decision !== "rejected" && !c.claimed_by)
+    ? "possible_match" : "searching";
 }
 
 function summarize(r) {
@@ -321,7 +407,7 @@ function cleanReport(id, r) {
   return out;
 }
 
-async function mockApi(method, path, body) {
+async function mockApi(method, path, body, pin) {
   await new Promise(r => setTimeout(r, 200)); // feel like a network call
   const state = mockLoad();
   const fail = (status, error) => { throw new ApiError(error, status); };
@@ -331,7 +417,12 @@ async function mockApi(method, path, body) {
     if (!user) fail(401, "Please log in.");
     if (!roles.includes(user.role)) fail(403, "You do not have access to this.");
   };
-  const isStaff = () => needRole("authority", "admin");
+  // Swastik's backend checks X-Auth-Pin on authority routes. The mock accepts
+  // any non-empty PIN; the real server checks the real one.
+  const isStaff = () => {
+    needRole("authority", "admin");
+    if (!pin) fail(401, "Access PIN required.");
+  };
   let m;
   body = body || {};
 
@@ -484,7 +575,26 @@ async function mockApi(method, path, body) {
   if (method === "GET" && (m = path.match(/^\/api\/status\/([^/]+)$/))) {
     const id = decodeURIComponent(m[1]).trim().toUpperCase();
     if (!state.missing[id]) fail(404, "We could not find a report with that number.");
-    return { id, status: mockStatus(state, id) };
+    return {
+      id, status: mockStatus(state, id),
+      authority_contact: "City Reunification Desk, phone 555-0199 (synthetic demo number)",
+    };
+  }
+
+  if (method === "GET" && path === "/api/places") {
+    return MOCK_PLACES;
+  }
+
+  if (method === "GET" && path === "/api/demo-cases") {
+    return MOCK_DEMO_CASES;
+  }
+
+  // Found-person report from a member of the public, no account needed.
+  if (method === "POST" && path === "/api/public/found") {
+    const id = "F" + state.nextFound++;
+    state.found[id] = Object.assign({}, body, { source: "public" });
+    mockSave();
+    return { id };
   }
 
   if (method === "POST" && path === "/api/found") {
@@ -498,7 +608,10 @@ async function mockApi(method, path, body) {
   if (method === "GET" && path === "/api/missing") {
     isStaff();
     return Object.entries(state.missing).map(([id, r]) =>
-      Object.assign(cleanReport(id, r), { status: mockStatus(state, id), summary: summarize(r) }));
+      Object.assign(cleanReport(id, r), {
+        status: mockStatus(state, id), summary: summarize(r),
+        flagged: mockStatus(state, id) === "possible_match",
+      }));
   }
 
   if (method === "GET" && (m = path.match(/^\/api\/matches\/([^/]+)$/))) {
@@ -512,21 +625,39 @@ async function mockApi(method, path, body) {
     isStaff();
     const id = decodeURIComponent(m[1]);
     if (!state.missing[id]) fail(404, "Report not found.");
-    if (!state.found[body.found_id]) fail(400, "Unknown found_id.");
-    if (body.decision === "confirm") state.confirmed[id] = body.found_id;
-    else if (body.decision === "reject") {
-      (state.rejected[id] = state.rejected[id] || []).push(body.found_id);
-      if (state.confirmed[id] === body.found_id) delete state.confirmed[id];
-    } else fail(400, "decision must be \"confirm\" or \"reject\".");
+    const fid = body.found_id;
+    if (!state.found[fid]) fail(400, "Unknown found_id.");
+    const d = state.decisions[id] = state.decisions[id] || {};
+    if (body.decision === "confirm") {
+      const other = mockClaimedBy(state, fid);
+      if (other && other !== id) fail(409, "Found person " + fid + " is already claimed by report " + other + ".");
+      if (Object.entries(d).some(([f, v]) => v === "confirmed" && f !== fid)) {
+        fail(409, "Report " + id + " already has a confirmed match. Undo it first.");
+      }
+      d[fid] = "confirmed";
+    } else if (body.decision === "reject") {
+      d[fid] = "rejected";
+    } else if (body.decision === "undo") {
+      delete d[fid];
+    } else fail(400, "decision must be \"confirm\", \"reject\" or \"undo\".");
     mockSave();
     return { missing_id: id, found_id: body.found_id, decision: body.decision, status: mockStatus(state, id) };
   }
 
   if (method === "GET" && path === "/api/benchmark") {
     return {
-      chip_on: { pairs_per_sec: 120000, seconds: 1.4 },
-      chip_off: { pairs_per_sec: 45000, seconds: 3.7 },
-      note: "ILLUSTRATIVE PLACEHOLDER — not measured results",
+      note: "PLACEHOLDER NUMBERS — not measured results. Real values come from the team's benchmark run.",
+      accuracy: {
+        cases: 200,
+        engine: { top1: 0.78, top5: 0.94 },
+        keyword: { top1: 0.41, top5: 0.66 },
+      },
+      speed: { pairs: 40000, full_rescan_seconds: 1.9 },
+      chip: {
+        on: { seconds: 1.9 },
+        off: { seconds: 2.0 },
+        note: "Placeholder: in this run the accelerator made almost no difference.",
+      },
     };
   }
 
@@ -546,6 +677,7 @@ const PERSON_LABELS = {
   relationship: "Relationship", age: "Age",
   agency: "Agency or organisation", position: "Job title", staff_id: "Staff or badge number",
   reason: "Reason for access",
+  pin: "Access PIN", reporter_name: "Your name", reporter_phone: "Your phone number",
 };
 
 function readForm(form, fields) {
@@ -635,9 +767,21 @@ async function withBusy(button, fn) {
 
 function markMockMode() {
   const slot = $("#mock-indicator");
-  if (slot && USE_MOCK) {
-    slot.replaceChildren(el("span", { class: "mock-note", text: "Demo mode: showing synthetic sample responses, no server connected." }));
+  if (!slot) return;
+  const notes = [];
+  if (location.protocol === "file:") {
+    notes.push(el("div", { class: "message error", role: "alert", text:
+      "This page was opened as a file, so the family and authority portals cannot share data. " +
+      "In a terminal, run: cd frontend && python3 -m http.server 5500, then open http://localhost:5500/" }));
   }
+  slot.replaceChildren(...notes);
+}
+
+// Calls `fn` whenever the data may have changed elsewhere: another tab saved
+// demo data, or the user came back to this tab.
+function onDataMaybeChanged(fn) {
+  window.addEventListener("storage", e => { if (e.key === MOCK_KEY) fn(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) fn(); });
 }
 
 // Sends the visitor to `loginUrl` unless they are logged in with one of `roles`.
@@ -727,36 +871,252 @@ function recordList(rows) {
     value === undefined || value === null || value === "" ? [] : [el("dt", { text: label }), el("dd", { text: String(value) })]));
 }
 
+/* ---------- Places and demo helpers ---------- */
+
+// Fills a <datalist> with place names from GET /api/places so place fields autocomplete.
+// The list may be strings or objects with a name.
+async function fillPlaces(datalist) {
+  if (!datalist) return;
+  try {
+    const places = await api("GET", "/api/places");
+    datalist.replaceChildren(...(places || []).map(p =>
+      el("option", { value: typeof p === "string" ? p : (p.name || p.place || "") })));
+  } catch (e) { /* free typing still works */ }
+}
+
+// The demo panel is hidden unless the page is opened with ?demo=1 (remembered
+// for this tab). ?demo=0 hides it again.
+function demoMode() {
+  const q = new URLSearchParams(location.search).get("demo");
+  try {
+    if (q === "1") sessionStorage.setItem("db_demo", "1");
+    if (q === "0") sessionStorage.removeItem("db_demo");
+    return sessionStorage.getItem("db_demo") === "1";
+  } catch (e) { return q === "1"; }
+}
+
+async function liveDemoCases() {
+  const all = await api("GET", "/api/demo-cases");
+  return (all || []).filter(c => c.good_for_live_demo === true);
+}
+
+// Puts a record's values into a form. `rename` maps record keys to form names.
+function fillForm(form, record, rename) {
+  for (const [key, value] of Object.entries(record || {})) {
+    const name = (rename && rename[key]) || key;
+    const input = form.elements[name];
+    if (input && value !== null && value !== undefined) input.value = value;
+  }
+}
+
+// Splits "2026-10-17T14:30" into the date and time inputs used by our forms.
+function fillDateTime(form, prefix, iso) {
+  if (!iso) return;
+  const [date, time] = String(iso).split("T");
+  if (form.elements[prefix + "_date"]) form.elements[prefix + "_date"].value = date;
+  if (form.elements[prefix + "_clock"] && time) form.elements[prefix + "_clock"].value = time.slice(0, 5);
+}
+
+// Builds the hidden demo panel listing live-demo cases. `onPick(case)` runs on click.
+async function renderDemoPanel(panel, label, onPick) {
+  if (!panel || !demoMode()) return;
+  show(panel, true);
+  const list = el("div", { class: "actions" });
+  panel.replaceChildren(
+    el("strong", { text: "Demo helper" }),
+    el("p", { class: "hint", text: "Only cases marked good for a live demo are shown. Open the page without ?demo=1 to hide this." }),
+    list);
+  try {
+    const cases = await liveDemoCases();
+    list.replaceChildren(...(cases.length ? cases.map(c => el("button", {
+      type: "button", class: "secondary", text: label + ": " + (c.title || c.id),
+      onclick: () => onPick(c),
+    })) : [el("span", { text: "No live-demo cases available." })]));
+  } catch (e) {
+    list.replaceChildren(el("span", { class: "field-error", text: "Could not load demo cases. " + e.message }));
+  }
+}
+
+/* ---------- Public status page (no login) ---------- */
+
+const STATUS_EXPLAIN = {
+  searching: "We are still looking. New information is checked as it arrives.",
+  possible_match: "A trained person is checking a possible match. You will be contacted if it is confirmed.",
+  reunited: "This report has been confirmed as a match. Officials will contact you with details.",
+};
+
+async function initStatus() {
+  const form = $("#status-form");
+  const box = $("#status-result");
+
+  // quiet = background refresh: no loading text and no focus jump.
+  async function lookUp(id, quiet) {
+    if (!quiet) {
+      clearMessage(box);
+      box.replaceChildren(el("p", { class: "loading", text: "Checking status…" }));
+    }
+    try {
+      const res = await api("GET", "/api/status/" + encodeURIComponent(id));
+      const status = normalStatus(res.status);
+      // Only the status and the authority contact line are shown. Never match details.
+      const contact = res.authority_contact || res.contact_line || res.contact;
+      const content = [
+        el("p", { text: "Report " + (res.id || id) }),
+        statusPill(status, true),
+        el("p", { text: STATUS_EXPLAIN[status] || "" }),
+        contact ? el("p", null, [el("strong", { text: "Contact: " }), contact]) : null,
+        el("p", { class: "hint", text: "Last checked " + new Date().toLocaleTimeString() + ". This page refreshes by itself." }),
+      ];
+      if (quiet) { box.className = "message"; box.replaceChildren(...content); }
+      else showMessage(box, "", content);
+      history.replaceState(null, "", "?id=" + encodeURIComponent(res.id || id));
+    } catch (e) {
+      if (quiet) return;
+      showMessage(box, "error", e.status === 404
+        ? "We could not find a report with that number. Please check it and try again." : e.message);
+    }
+  }
+
+  form.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const id = form.elements.report_id.value.trim().toUpperCase();
+    if (!id) { setFieldError(form, "report_id", "Please enter your report number."); form.elements.report_id.focus(); return; }
+    setFieldError(form, "report_id", "");
+    withBusy(form.querySelector("button[type=submit]"), () => lookUp(id));
+  });
+
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) { form.elements.report_id.value = id; lookUp(id.trim().toUpperCase()); }
+
+  // Keep the status fresh while the page is open (useful during the live demo).
+  setInterval(() => {
+    const cur = form.elements.report_id.value.trim().toUpperCase();
+    if (cur && !document.hidden && !box.classList.contains("error")) lookUp(cur, true);
+  }, 15000);
+}
+
+/* ---------- Public "report a found person" page (no login) ---------- */
+
+function initReportFound() {
+  const form = $("#public-found-form");
+  const box = $("#public-found-message");
+  fillPlaces($("#places"));
+  const fields = ["age_min", "age_max", "gender", "height_cm", "hair", "clothing", "marks",
+    "found_place", "found_date", "found_clock", "current_location", "description",
+    "reporter_name", "reporter_phone"];
+  const required = ["age_min", "age_max", "gender", "found_place", "found_date", "current_location",
+    "reporter_name", "reporter_phone"];
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    clearMessage(box);
+    const data = readForm(form, fields);
+    const errors = validate(form, data, required);
+    if (errors.length) { showMessage(box, "error", errorSummary(form, errors)); return; }
+    joinDateTime(data, "found", "found_time");
+    await withBusy(form.querySelector("button[type=submit]"), async () => {
+      try {
+        const res = await api("POST", "/api/public/found", data);
+        form.reset();
+        show(form, false);
+        showMessage(box, "success", [
+          el("strong", { text: "Thank you. Your report has been sent to rescue staff." }),
+          el("p", { text: "Reference: " + res.id + ". Staff will check it and may call you on the number you gave." }),
+          el("a", { href: "index.html", text: "Back to home" }),
+        ]);
+      } catch (e) { showMessage(box, "error", e.message); }
+    });
+  });
+}
+
 /* ---------- Platform page ---------- */
 
+// Renders GET /api/benchmark. Shows whatever the results say, including chip
+// results that did not help. The raw output is always shown in full as well.
 async function initPlatform() {
   const box = $("#bench-message");
-  const fmt = n => Number(n).toLocaleString();
+  let b;
   try {
-    const b = await api("GET", "/api/benchmark");
-    const on = b.chip_on, off = b.chip_off;
-    const max = Math.max(on.pairs_per_sec, off.pairs_per_sec) || 1;
-    for (const [key, v] of [["on", on], ["off", off]]) {
-      const pct = Math.round((v.pairs_per_sec / max) * 100);
-      $("#bench-" + key + "-value").textContent = fmt(v.pairs_per_sec) + " pairs/sec · " + v.seconds + " s";
-      const track = $("#bench-" + key + "-track");
-      track.setAttribute("aria-valuenow", String(v.pairs_per_sec));
-      track.setAttribute("aria-valuemax", String(max));
-      requestAnimationFrame(() => { $("#bench-" + key).style.width = pct + "%"; });
-    }
-    const speedup = off.pairs_per_sec ? (on.pairs_per_sec / off.pairs_per_sec).toFixed(1) : "–";
-    $("#bench-summary").textContent = "Accelerator on handles about " + speedup + "× as many pairs per second in this comparison.";
-    $("#bench-note").textContent = b.note || "";
+    b = await api("GET", "/api/benchmark");
   } catch (e) {
-    showMessage(box, "error", "Benchmark numbers are not available right now. " + e.message);
+    show($("#bench-loading"), false);
+    showMessage(box, "error", "Benchmark results are not available right now. " + e.message);
+    return;
   }
+  show($("#bench-loading"), false);
+
+  const pct = v => (typeof v === "number" ? (v <= 1 ? v * 100 : v) : null);
+  const fmtPct = v => (v === null ? "–" : (Math.round(v * 10) / 10) + "%");
+  const bar = (label, value, cls) => el("div", { class: "bench-row" }, [
+    el("div", { class: "bench-label" }, [el("span", { text: label }), el("span", { text: fmtPct(value) })]),
+    el("div", { class: "bench-track", role: "meter", "aria-label": label, "aria-valuemin": "0", "aria-valuemax": "100",
+      "aria-valuenow": value === null ? "0" : String(value) },
+      [el("div", { class: "bench-fill " + cls, style: "width:" + (value || 0) + "%" })]),
+  ]);
+
+  if (b.note) { $("#bench-note").textContent = b.note; show($("#bench-note"), true); }
+
+  // Accuracy: engine vs keyword matching, top-1 and top-5.
+  const acc = b.accuracy;
+  if (acc) {
+    const engine = acc.engine || acc.model || acc.ours || {};
+    const keyword = acc.keyword || acc.baseline || {};
+    $("#accuracy-intro").textContent = "How often the right person was ranked 1st, or in the top 5, " +
+      "compared with simple keyword matching" + (acc.cases ? ", over " + acc.cases + " test cases." : ".");
+    $("#accuracy-bars").replaceChildren(
+      el("h3", { text: "Ranked 1st" }),
+      bar("Our matching engine", pct(engine.top1), "on"),
+      bar("Keyword matching", pct(keyword.top1), "off"),
+      el("h3", { text: "In the top 5" }),
+      bar("Our matching engine", pct(engine.top5), "on"),
+      bar("Keyword matching", pct(keyword.top5), "off"));
+    show($("#accuracy"), true);
+  }
+
+  // Speed: full re-scan time.
+  const speed = b.speed;
+  if (speed) {
+    const secs = speed.full_rescan_seconds !== undefined ? speed.full_rescan_seconds : speed.seconds;
+    $("#speed-text").replaceChildren(
+      el("strong", { text: secs !== undefined ? secs + " seconds" : "–" }),
+      el("span", { text: " to re-check every missing report against every found person" +
+        (speed.pairs ? " (" + Number(speed.pairs).toLocaleString() + " pairs)." : ".") }));
+    show($("#speed"), true);
+  }
+
+  // Chip results: shown as reported, even if the chip did not help.
+  const chip = b.chip || b.linuxone || b.telum;
+  const body = $("#chip-body");
+  if (chip) {
+    const on = chip.on || chip.chip_on || {}, off = chip.off || chip.chip_off || {};
+    const parts = [];
+    if (on.seconds !== undefined && off.seconds !== undefined) {
+      const max = Math.max(on.seconds, off.seconds) || 1;
+      const timeBar = (label, v, cls) => el("div", { class: "bench-row" }, [
+        el("div", { class: "bench-label" }, [el("span", { text: label }), el("span", { text: v + " s" })]),
+        el("div", { class: "bench-track", role: "meter", "aria-label": label + " time in seconds",
+          "aria-valuemin": "0", "aria-valuemax": String(max), "aria-valuenow": String(v) },
+          [el("div", { class: "bench-fill " + cls, style: "width:" + Math.round(v / max * 100) + "%" })]),
+      ]);
+      parts.push(el("p", { text: "Time for the same job with the accelerator on and off. Shorter bars are faster." }),
+        timeBar("Accelerator on", on.seconds, "on"), timeBar("Accelerator off", off.seconds, "off"));
+    }
+    if (chip.note) parts.push(el("p", { class: "chip-note" }, [el("strong", { text: "Result: " }), chip.note]));
+    if (!parts.length) parts.push(el("p", { text: "Chip results are listed in the full results below." }));
+    body.replaceChildren(...parts);
+  } else {
+    body.replaceChildren(el("p", { text: "Chip results are not available yet." }));
+  }
+  show($("#chip"), true);
+
+  $("#raw-json").textContent = JSON.stringify(b, null, 2);
+  show($("#raw"), true);
 }
 
 /* ---------- Boot ---------- */
 
 // Portal scripts (family/family.js, authority/authority.js) register their
 // page setup functions here. Deferred scripts all run before DOMContentLoaded.
-const PAGES = { platform: initPlatform };
+const PAGES = { platform: initPlatform, status: initStatus, "report-found": initReportFound };
 
 document.addEventListener("DOMContentLoaded", () => {
   markMockMode();
