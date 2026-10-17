@@ -28,13 +28,13 @@ Then open <http://localhost:5500/>. Use the local server instead of double-click
 
 ### Demo logins 
 
-| Portal | Email | Password | PIN |
-|---|---|---|---|
-| Family | `family@reunite.demo` | `demo-family-2026` | – |
-| Authority (admin) | `admin@reunite.demo` | `demo-admin-2026` | any number in mock mode |
-| Authority (officer) | `officer@reunite.demo` | `demo-officer-2026` | any number in mock mode |
+| Portal | Email | Password | 
+|---|---|---|
+| Family | `family@reunite.demo` | `demo-family-2026` |
+| Authority (admin) | `admin@reunite.demo` | `demo-admin-2026` | 
+| Authority (officer) | `officer@reunite.demo` | `demo-officer-2026` | 
 
-These accounts are fake and exist only inside `app.js`. The **real PIN** comes from Swastik. It is typed in at login and **never stored in the code**.
+
 
 ## Live demo script (for the judges)
 
