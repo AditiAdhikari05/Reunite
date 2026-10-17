@@ -3,19 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Report a missing person · DisasterBridge</title>
+  <title>DisasterBridge · Reuniting families after disasters</title>
   <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
 </head>
-<body data-page="family">
+<body data-page="welcome">
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <span class="brand">DisasterBridge</span>
+      <a class="brand" href="index.html">DisasterBridge</a>
       <nav class="site-nav" aria-label="Main">
         <ul>
-          <li><a href="index.html" aria-current="page">Families</a></li>
-          <li><a href="authority.html">Authorities</a></li>
+          <li><a href="index.html" aria-current="page">Home</a></li>
           <li><a href="platform.html">How it runs</a></li>
         </ul>
       </nav>
@@ -23,104 +22,50 @@
   </header>
 
   <main id="main">
-    <h1>Find a missing family member</h1>
-    <p class="lead">Tell us about the person you are looking for. Trained staff compare every report with people who have been found. Fill in what you know. It is fine to leave out details you are unsure of.</p>
-    <p id="mock-indicator"></p>
-
-    <section class="card" aria-labelledby="status-title">
-      <h2 id="status-title">Already reported? Check status</h2>
-      <form id="status-form" novalidate>
-        <div class="field">
-          <label for="status-id">Report number <span class="hint">For example M12</span></label>
-          <input id="status-id" name="report_id" type="text" autocomplete="off" autocapitalize="characters" aria-describedby="status-id-error">
-          <p id="status-id-error" class="field-error"></p>
-        </div>
-        <div class="actions"><button type="submit">Check status</button></div>
-      </form>
-      <div id="status-message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
+    <section class="hero">
+      <h1>Reuniting families after disasters</h1>
+      <p class="lead">Families report people they are looking for. Rescue and shelter staff record people they have found. Trained staff check every possible match before anyone is told.</p>
+      <p id="mock-indicator"></p>
     </section>
 
-    <section class="card" aria-labelledby="report-title">
-      <h2 id="report-title">Report a missing person</h2>
-      <form id="missing-form" novalidate>
-        <fieldset class="field" style="border:0;padding:0;margin:0 0 1rem">
-          <legend>Age <span class="hint">If you are not sure, give a range</span></legend>
-          <div class="field-row">
-            <div class="field">
-              <label for="age_min">Lowest age</label>
-              <input id="age_min" name="age_min" type="number" inputmode="numeric" min="0" max="120" step="1" required aria-describedby="age_min-error">
-              <p id="age_min-error" class="field-error"></p>
-            </div>
-            <div class="field">
-              <label for="age_max">Highest age</label>
-              <input id="age_max" name="age_max" type="number" inputmode="numeric" min="0" max="120" step="1" required aria-describedby="age_max-error">
-              <p id="age_max-error" class="field-error"></p>
-            </div>
-          </div>
-        </fieldset>
+    <h2 class="sr-only">Choose who you are</h2>
+    <div class="role-grid">
+      <section class="card role-card family" aria-labelledby="family-card-title">
+        <div class="role-icon" aria-hidden="true">🏠</div>
+        <h2 id="family-card-title">I am looking for a family member</h2>
+        <ul>
+          <li>Report someone missing</li>
+          <li>Save details of your family in advance</li>
+          <li>Follow the status of your reports</li>
+        </ul>
+        <div class="actions">
+          <a class="button" href="family/login.html">Family log in</a>
+          <a class="button secondary" href="family/signup.html">Create account</a>
+        </div>
+      </section>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="gender">Gender</label>
-            <select id="gender" name="gender" required aria-describedby="gender-error">
-              <option value="">Choose…</option>
-              <option value="female">Female</option>
-              <option value="male">Male</option>
-              <option value="other">Other</option>
-              <option value="unknown">Unknown</option>
-            </select>
-            <p id="gender-error" class="field-error"></p>
-          </div>
-          <div class="field">
-            <label for="height_cm">Height in cm <span class="optional">(optional)</span></label>
-            <input id="height_cm" name="height_cm" type="number" inputmode="numeric" min="30" max="250" aria-describedby="height_cm-error">
-            <p id="height_cm-error" class="field-error"></p>
-          </div>
+      <section class="card role-card authority" aria-labelledby="authority-card-title">
+        <div class="role-icon" aria-hidden="true">🛡</div>
+        <h2 id="authority-card-title">I work for an emergency agency</h2>
+        <ul>
+          <li>Record people found in shelters and hospitals</li>
+          <li>Review suggested matches</li>
+          <li>Confirm reunions</li>
+        </ul>
+        <div class="actions">
+          <a class="button" href="authority/login.html">Authority log in</a>
+          <a class="button secondary" href="authority/request-access.html">Request access</a>
         </div>
+      </section>
+    </div>
 
-        <div class="field">
-          <label for="hair">Hair <span class="optional">(optional)</span> <span class="hint">Colour and length</span></label>
-          <input id="hair" name="hair" type="text" aria-describedby="hair-error">
-          <p id="hair-error" class="field-error"></p>
-        </div>
-        <div class="field">
-          <label for="clothing">Clothing <span class="optional">(optional)</span> <span class="hint">What they were wearing when last seen</span></label>
-          <input id="clothing" name="clothing" type="text" aria-describedby="clothing-error">
-          <p id="clothing-error" class="field-error"></p>
-        </div>
-        <div class="field">
-          <label for="marks">Distinguishing marks <span class="optional">(optional)</span> <span class="hint">Scars, tattoos, glasses, birthmarks</span></label>
-          <input id="marks" name="marks" type="text" aria-describedby="marks-error">
-          <p id="marks-error" class="field-error"></p>
-        </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label for="last_seen_place">Where they were last seen</label>
-            <input id="last_seen_place" name="last_seen_place" type="text" required aria-describedby="last_seen_place-error">
-            <p id="last_seen_place-error" class="field-error"></p>
-          </div>
-          <div class="field">
-            <label for="last_seen_time">When they were last seen</label>
-            <input id="last_seen_time" name="last_seen_time" type="datetime-local" required aria-describedby="last_seen_time-error">
-            <p id="last_seen_time-error" class="field-error"></p>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="description">Description <span class="hint">Anything else that could help: where they were going, health needs, who they were with</span></label>
-          <textarea id="description" name="description" required aria-describedby="description-error"></textarea>
-          <p id="description-error" class="field-error"></p>
-        </div>
-        <div class="field">
-          <label for="contact">Your contact details <span class="hint">Phone number or email so officials can reach you</span></label>
-          <input id="contact" name="contact" type="text" autocomplete="tel" required aria-describedby="contact-error">
-          <p id="contact-error" class="field-error"></p>
-        </div>
-
-        <div class="actions"><button type="submit">Send report</button></div>
-      </form>
-      <div id="missing-message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
+    <section aria-labelledby="how-title">
+      <h2 id="how-title">How it works</h2>
+      <ol class="steps">
+        <li><strong>A family reports</strong><br>They describe the missing person and where they were last seen.</li>
+        <li><strong>Staff record people found</strong><br>Shelters and hospitals add people in their care.</li>
+        <li><strong>A person checks every match</strong><br>The system suggests matches. Trained staff confirm them before families are told.</li>
+      </ol>
     </section>
   </main>
 

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Family log in · DisasterBridge</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../app.js" defer></script>
+  <script src="family.js" defer></script>
+</head>
+<body data-page="family-login" class="portal-family">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="../index.html">DisasterBridge <span class="portal-tag">Family portal</span></a>
+      <nav class="site-nav" aria-label="Main">
+        <ul><li><a href="../index.html">← Home</a></li></ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <p id="mock-indicator"></p>
+    <div class="auth-shell">
+      <aside class="auth-aside">
+        <h2>We are here to help</h2>
+        <p>Log in to report a missing family member and follow their status.</p>
+        <ul>
+          <li>Your information is only shared with authorised rescue staff.</li>
+          <li>Details about people who have been found are never shown publicly.</li>
+          <li>A trained person checks every possible match.</li>
+        </ul>
+      </aside>
+
+      <section class="auth-main" aria-labelledby="login-title">
+        <h1 id="login-title">Family log in</h1>
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input id="login-email" name="email" type="email" autocomplete="email" required aria-describedby="login-email-error">
+            <p id="login-email-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <div class="pw-wrap">
+              <input id="login-password" name="password" type="password" autocomplete="current-password" required aria-describedby="login-password-error">
+              <button type="button" class="pw-toggle" aria-controls="login-password" aria-pressed="false">Show</button>
+            </div>
+            <p id="login-password-error" class="field-error"></p>
+          </div>
+          <p id="login-hint" class="hint"></p>
+          <div class="actions"><button type="submit">Log in</button></div>
+        </form>
+        <div id="login-message" class="message" role="alert" tabindex="-1"></div>
+
+        <div class="auth-switch">
+          <p>New here? <a href="signup.html">Create a family account</a></p>
+          <p class="auth-other">Work for an emergency agency? <a href="../authority/login.html">Go to the authority portal</a></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">Demo using synthetic data only.</footer>
+</body>
+</html>

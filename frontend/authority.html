@@ -26,25 +26,35 @@
     <div class="banner sticky" role="note">Scores are suggestions. A human must verify every match.</div>
     <p id="mock-indicator"></p>
 
-    <section id="pin-gate" class="card" aria-labelledby="pin-title">
-      <h1 id="pin-title">Authority access</h1>
-      <p>This area is for authorised staff only.</p>
-      <form id="pin-form" novalidate>
+    <section id="login-gate" class="card auth-card" aria-labelledby="login-title">
+      <h1 id="login-title">Authority log in</h1>
+      <p>This area is for authorised staff only. Accounts are created by the administrator. There is no public sign-up.</p>
+      <form id="login-form" novalidate>
         <div class="field">
-          <label for="pin">Access code <span id="pin-hint" class="hint"></span></label>
-          <input id="pin" name="pin" type="password" autocomplete="off" required>
+          <label for="login-email">Work email</label>
+          <input id="login-email" name="email" type="email" autocomplete="username" required aria-describedby="login-email-error">
+          <p id="login-email-error" class="field-error"></p>
         </div>
-        <div class="actions"><button type="submit">Enter</button></div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required aria-describedby="login-password-error">
+          <p id="login-password-error" class="field-error"></p>
+        </div>
+        <p id="login-hint" class="hint"></p>
+        <div class="actions"><button type="submit">Log in</button></div>
       </form>
-      <div id="pin-message" class="message" role="alert" tabindex="-1"></div>
+      <div id="login-message" class="message" role="alert" tabindex="-1"></div>
     </section>
 
     <div id="dashboard" class="hidden">
       <div class="candidate-head">
-        <h1 id="dash-heading" tabindex="-1">Authority dashboard</h1>
+        <div>
+          <h1 id="dash-heading" tabindex="-1">Authority dashboard</h1>
+          <p class="hint">Logged in as <span id="welcome-name"></span></p>
+        </div>
         <div class="actions">
           <button type="button" id="mock-reset" class="secondary hidden">Reset demo data</button>
-          <button type="button" id="lock-button" class="secondary">Lock</button>
+          <button type="button" id="logout-button" class="secondary">Log out</button>
         </div>
       </div>
 
@@ -112,18 +122,25 @@
             <label for="f-marks">Distinguishing marks <span class="optional">(optional)</span></label>
             <input id="f-marks" name="marks" type="text">
           </div>
-          <div class="field-row">
-            <div class="field">
-              <label for="f-found_place">Where found</label>
-              <input id="f-found_place" name="found_place" type="text" required aria-describedby="f-found_place-error">
-              <p id="f-found_place-error" class="field-error"></p>
+          <fieldset class="field plain-fieldset">
+            <legend>Where and when were they found?</legend>
+            <div class="when-where">
+              <div>
+                <label for="f-found_place" class="sub-label">Place</label>
+                <input id="f-found_place" name="found_place" type="text" placeholder="e.g. Bridge Road" required aria-describedby="f-found_place-error">
+                <p id="f-found_place-error" class="field-error"></p>
+              </div>
+              <div>
+                <label for="f-found_date" class="sub-label">Date</label>
+                <input id="f-found_date" name="found_date" type="date" required aria-describedby="f-found_date-error">
+                <p id="f-found_date-error" class="field-error"></p>
+              </div>
+              <div>
+                <label for="f-found_clock" class="sub-label">Time <span class="optional">(if known)</span></label>
+                <input id="f-found_clock" name="found_clock" type="time">
+              </div>
             </div>
-            <div class="field">
-              <label for="f-found_time">When found</label>
-              <input id="f-found_time" name="found_time" type="datetime-local" required aria-describedby="f-found_time-error">
-              <p id="f-found_time-error" class="field-error"></p>
-            </div>
-          </div>
+          </fieldset>
           <div class="field">
             <label for="f-current_location">Current location <span class="hint">Hospital, shelter or other place they are now</span></label>
             <input id="f-current_location" name="current_location" type="text" required aria-describedby="f-current_location-error">
@@ -136,6 +153,39 @@
           <div class="actions"><button type="submit">Save found person</button></div>
         </form>
         <div id="found-message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
+      </section>
+
+      <section id="admin-panel" class="card hidden" aria-labelledby="admin-title">
+        <h2 id="admin-title">Manage authority accounts</h2>
+        <p class="hint">Only you, the administrator, can see this. Add a person to let them log in as an authority, then share their temporary password with them privately.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+            <tbody id="authorities-body"></tbody>
+          </table>
+        </div>
+        <h3 style="margin-top:1.25rem">Add an authority</h3>
+        <form id="authority-form" novalidate>
+          <div class="field-row">
+            <div class="field">
+              <label for="a-name">Full name</label>
+              <input id="a-name" name="name" type="text" required aria-describedby="a-name-error">
+              <p id="a-name-error" class="field-error"></p>
+            </div>
+            <div class="field">
+              <label for="a-email">Work email</label>
+              <input id="a-email" name="email" type="email" required aria-describedby="a-email-error">
+              <p id="a-email-error" class="field-error"></p>
+            </div>
+            <div class="field">
+              <label for="a-password">Temporary password <span class="hint">At least 8 characters</span></label>
+              <input id="a-password" name="password" type="text" autocomplete="off" required aria-describedby="a-password-error">
+              <p id="a-password-error" class="field-error"></p>
+            </div>
+          </div>
+          <div class="actions"><button type="submit">Add authority</button></div>
+        </form>
+        <div id="admin-message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
       </section>
     </div>
   </main>

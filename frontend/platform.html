@@ -11,11 +11,10 @@
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <span class="brand">DisasterBridge</span>
+      <a class="brand" href="index.html">DisasterBridge</a>
       <nav class="site-nav" aria-label="Main">
         <ul>
-          <li><a href="index.html">Families</a></li>
-          <li><a href="authority.html">Authorities</a></li>
+          <li><a href="index.html">Home</a></li>
           <li><a href="platform.html" aria-current="page">How it runs</a></li>
         </ul>
       </nav>
@@ -31,7 +30,7 @@
       <h2 id="flow-title">What happens to a report</h2>
       <ol class="flow">
         <li>A family sends a report from this website. It goes straight to the Flask application on LinuxONE.</li>
-        <li>Authorities add people who have been found. Only staff with an access code can do this, and the server checks the code on every request.</li>
+        <li>Authorities add people who have been found. They use a separate staff portal, accounts must be approved by an administrator, and the server checks their login on every request.</li>
         <li>The matching engine runs on the same LinuxONE server. It compares reports and suggests possible matches, each with a score and its reasons.</li>
         <li>A trained person checks every suggestion and confirms or rejects it. The software never confirms a match by itself.</li>
         <li>Families only ever see one of three statuses: Searching, Possible match under review, or Reunited. Details about found people stay on the server.</li>

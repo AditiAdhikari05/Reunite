@@ -2,9 +2,11 @@ const USE_MOCK = true;
 
 /* DisasterBridge-AI frontend logic. Plain JavaScript, no build step.
    When USE_MOCK is true, every API call is answered by the synthetic mock
-   below. Set it to false once the Flask backend serves /api/*. */
+   below. Set it to false once the Flask backend serves /api/*.
 
-const PIN_KEY = "db_auth_pin";
+   Login uses a server session cookie (set by the backend on login), so the
+   browser sends it automatically with every same-origin fetch. No password,
+   token or access code is kept in JavaScript or browser storage. */
 
 const STATUS_LABELS = {
   searching: "Searching",
@@ -59,35 +61,26 @@ function statusPill(status, big) {
   });
 }
 
+function show(node, visible) { node.classList.toggle("hidden", !visible); }
+
 /* ---------- API helper ---------- */
 
 class ApiError extends Error {
   constructor(message, status) { super(message); this.status = status; }
 }
 
-function getPin() {
-  try { return sessionStorage.getItem(PIN_KEY) || ""; } catch (e) { return ""; }
-}
-function setPin(pin) {
-  try { sessionStorage.setItem(PIN_KEY, pin); } catch (e) { /* ignore */ }
-}
-function clearPin() {
-  try { sessionStorage.removeItem(PIN_KEY); } catch (e) { /* ignore */ }
-}
-
-async function api(method, path, body, opts) {
-  const auth = opts && opts.auth;
-  if (USE_MOCK) return mockApi(method, path, body, auth ? getPin() : null);
+async function api(method, path, body) {
+  if (USE_MOCK) return mockApi(method, path, body);
 
   const headers = { Accept: "application/json" };
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (auth) headers["X-Auth-Pin"] = getPin();
 
   let res;
   try {
     res = await fetch(path, {
       method,
       headers,
+      credentials: "same-origin",
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch (e) {
@@ -104,38 +97,67 @@ async function api(method, path, body, opts) {
   return data;
 }
 
-/* ---------- Mock backend (synthetic data only) ---------- */
+/* ---------- Mock backend (synthetic data only) ----------
+   Demo logins below are fake and only exist in mock mode. The real backend
+   must keep its own accounts with hashed passwords. */
 
-const MOCK_KEY = "db_mock_state_v1";
+const MOCK_KEY = "db_mock_state_v3";
+const MOCK_SESSION_KEY = "db_mock_session";
+
+const DEMO_ADMIN = { email: "admin@disasterbridge.demo", password: "demo-admin-2026" };
+const DEMO_FAMILY = { email: "family@disasterbridge.demo", password: "demo-family-2026" };
 
 function mockSeed() {
   return {
     nextMissing: 13,
     nextFound: 8,
+    nextMember: 3,
+    users: {
+      [DEMO_ADMIN.email]: { name: "Demo Admin", role: "admin", password: DEMO_ADMIN.password },
+      "officer@disasterbridge.demo": { name: "Sam Officer", role: "authority", password: "demo-officer-2026" },
+      [DEMO_FAMILY.email]: { name: "Demo Family", role: "family", password: DEMO_FAMILY.password, phone: "555-0100" },
+      "riya.chen@cityfire.demo": {
+        name: "Riya Chen", role: "pending", password: "demo-pending-2026",
+        agency: "City Fire Department", position: "Shelter coordinator", staff_id: "CFD-2291",
+        reason: "Coordinating intake at City Shelter 2.", requested_at: "2026-10-17T08:20",
+      },
+    },
+    members: {
+      P1: {
+        owner: DEMO_FAMILY.email, name: "Maya", relationship: "Sister", age: 31, gender: "female",
+        height_cm: 165, hair: "black, shoulder length", marks: "scar above left eyebrow",
+        notes: "Works at Riverside Market.", report_id: "M12",
+      },
+      P2: {
+        owner: DEMO_FAMILY.email, name: "Leo", relationship: "Son", age: 8, gender: "male",
+        height_cm: 128, hair: "brown, short", marks: "", notes: "Allergic to peanuts.", report_id: null,
+      },
+    },
     missing: {
       M10: {
-        age_min: 6, age_max: 9, gender: "male", height_cm: 125,
+        owner: "other", age_min: 6, age_max: 9, gender: "male", height_cm: 125,
         hair: "brown, short", clothing: "green school uniform",
         marks: "glasses with blue frames", last_seen_place: "North Primary School",
         last_seen_time: "2026-10-16T14:15",
         description: "Was waiting for the school bus when the water rose.",
-        contact: "555-0101", status: "searching",
+        contact: "555-0101",
       },
       M11: {
-        age_min: 70, age_max: 78, gender: "female", height_cm: 155,
+        owner: "other", age_min: 70, age_max: 78, gender: "female", height_cm: 155,
         hair: "grey, tied back", clothing: "purple cardigan",
         marks: "uses a walking stick", last_seen_place: "Elm Street flats",
         last_seen_time: "2026-10-16T09:30",
         description: "Lives alone on the ground floor. May be confused.",
-        contact: "555-0102", status: "searching",
+        contact: "555-0102",
       },
       M12: {
+        owner: DEMO_FAMILY.email, member_id: "P1",
         age_min: 28, age_max: 34, gender: "female", height_cm: 165,
         hair: "black, shoulder length", clothing: "red jacket, jeans",
         marks: "scar above left eyebrow", last_seen_place: "Riverside Market",
         last_seen_time: "2026-10-16T18:00",
         description: "Last seen heading towards the bridge.",
-        contact: "555-0100", status: "searching",
+        contact: "555-0100",
       },
     },
     found: {
@@ -198,6 +220,16 @@ function mockSave() {
 function mockReset() {
   mockState = mockSeed();
   mockSave();
+}
+
+function mockSession() {
+  try { return sessionStorage.getItem(MOCK_SESSION_KEY); } catch (e) { return null; }
+}
+function mockSetSession(email) {
+  try {
+    if (email) sessionStorage.setItem(MOCK_SESSION_KEY, email);
+    else sessionStorage.removeItem(MOCK_SESSION_KEY);
+  } catch (e) { /* ignore */ }
 }
 
 const STOP_WORDS = new Set(["the", "and", "with", "a", "an", "of", "on", "in", "above", "below", "left", "right"]);
@@ -280,16 +312,171 @@ function summarize(r) {
     .filter(Boolean).join(", ");
 }
 
-async function mockApi(method, path, body, pin) {
-  await new Promise(r => setTimeout(r, 250)); // feel like a network call
+function publicUser(email, u) { return { email, name: u.name, role: u.role }; }
+
+// Strips mock-only bookkeeping (owner) from a missing report before returning it.
+function cleanReport(id, r) {
+  const out = Object.assign({ id }, r);
+  delete out.owner;
+  return out;
+}
+
+async function mockApi(method, path, body) {
+  await new Promise(r => setTimeout(r, 200)); // feel like a network call
   const state = mockLoad();
   const fail = (status, error) => { throw new ApiError(error, status); };
-  const needAuth = () => { if (!pin) fail(401, "Access code required."); };
+  const email = mockSession();
+  const user = email && state.users[email];
+  const needRole = (...roles) => {
+    if (!user) fail(401, "Please log in.");
+    if (!roles.includes(user.role)) fail(403, "You do not have access to this.");
+  };
+  const isStaff = () => needRole("authority", "admin");
   let m;
+  body = body || {};
 
+  /* Accounts */
+  if (method === "POST" && path === "/api/auth/signup") {
+    const key = String(body.email || "").trim().toLowerCase();
+    if (state.users[key]) fail(409, "An account with this email already exists. Please log in instead.");
+    state.users[key] = { name: body.name, role: "family", password: body.password, phone: body.phone };
+    mockSave();
+    mockSetSession(key);
+    return { user: publicUser(key, state.users[key]) };
+  }
+
+  if (method === "POST" && path === "/api/auth/login") {
+    const key = String(body.email || "").trim().toLowerCase();
+    const u = state.users[key];
+    const staffSide = body.role === "authority";
+    if (u && u.password === body.password && staffSide && u.role === "pending") {
+      fail(403, "Your access request is still waiting for administrator approval. You can log in once it is approved.");
+    }
+    const roleOk = u && (staffSide ? u.role === "authority" || u.role === "admin" : u.role === "family");
+    if (!u || u.password !== body.password || !roleOk) fail(401, "Email or password is incorrect.");
+    mockSetSession(key);
+    return { user: publicUser(key, u) };
+  }
+
+  if (method === "POST" && path === "/api/auth/logout") {
+    mockSetSession(null);
+    return { ok: true };
+  }
+
+  if (method === "GET" && path === "/api/auth/me") {
+    if (!user) fail(401, "Not logged in.");
+    return { user: publicUser(email, user) };
+  }
+
+  /* Authority access requests (approved by the admin) */
+  if (method === "POST" && path === "/api/auth/authority/request") {
+    const key = String(body.email || "").trim().toLowerCase();
+    if (state.users[key]) fail(409, "There is already an account or request for this email.");
+    state.users[key] = {
+      name: body.name, role: "pending", password: body.password, agency: body.agency,
+      position: body.position, staff_id: body.staff_id, reason: body.reason,
+      requested_at: new Date().toISOString().slice(0, 16),
+    };
+    mockSave();
+    return { status: "pending" };
+  }
+
+  if (method === "GET" && path === "/api/admin/requests") {
+    needRole("admin");
+    return Object.entries(state.users).filter(([, u]) => u.role === "pending").map(([e, u]) => ({
+      email: e, name: u.name, agency: u.agency, position: u.position, staff_id: u.staff_id,
+      reason: u.reason, requested_at: u.requested_at,
+    }));
+  }
+
+  if (method === "POST" && (m = path.match(/^\/api\/admin\/requests\/([^/]+)\/(approve|reject)$/))) {
+    needRole("admin");
+    const key = decodeURIComponent(m[1]);
+    const u = state.users[key];
+    if (!u || u.role !== "pending") fail(404, "Request not found.");
+    if (m[2] === "approve") u.role = "authority";
+    else delete state.users[key];
+    mockSave();
+    return { ok: true };
+  }
+
+  /* Admin: manage authority accounts */
+  if (method === "GET" && path === "/api/admin/authorities") {
+    needRole("admin");
+    return Object.entries(state.users)
+      .filter(([, u]) => u.role === "authority" || u.role === "admin")
+      .map(([e, u]) => publicUser(e, u));
+  }
+
+  if (method === "POST" && path === "/api/admin/authorities") {
+    needRole("admin");
+    const key = String(body.email || "").trim().toLowerCase();
+    if (state.users[key]) fail(409, "An account with this email already exists.");
+    state.users[key] = { name: body.name, role: "authority", password: body.password };
+    mockSave();
+    return { user: publicUser(key, state.users[key]) };
+  }
+
+  if (method === "DELETE" && (m = path.match(/^\/api\/admin\/authorities\/([^/]+)$/))) {
+    needRole("admin");
+    const key = decodeURIComponent(m[1]);
+    const u = state.users[key];
+    if (!u || u.role !== "authority") fail(404, "Authority account not found.");
+    delete state.users[key];
+    mockSave();
+    return { ok: true };
+  }
+
+  /* Family: members and own reports */
+  if (method === "GET" && path === "/api/family/members") {
+    needRole("family");
+    return Object.entries(state.members)
+      .filter(([, p]) => p.owner === email)
+      .map(([id, p]) => {
+        const out = Object.assign({ id }, p);
+        delete out.owner;
+        out.status = p.report_id ? mockStatus(state, p.report_id) : null;
+        return out;
+      });
+  }
+
+  if (method === "POST" && path === "/api/family/members") {
+    needRole("family");
+    const id = "P" + state.nextMember++;
+    state.members[id] = Object.assign({}, body, { owner: email, report_id: null });
+    mockSave();
+    return { id };
+  }
+
+  if (method === "DELETE" && (m = path.match(/^\/api\/family\/members\/([^/]+)$/))) {
+    needRole("family");
+    const p = state.members[decodeURIComponent(m[1])];
+    if (!p || p.owner !== email) fail(404, "Family member not found.");
+    delete state.members[decodeURIComponent(m[1])];
+    mockSave();
+    return { ok: true };
+  }
+
+  if (method === "GET" && path === "/api/family/reports") {
+    needRole("family");
+    return Object.entries(state.missing)
+      .filter(([, r]) => r.owner === email)
+      .map(([id, r]) => ({
+        id,
+        status: mockStatus(state, id),
+        member_name: r.member_id && state.members[r.member_id] ? state.members[r.member_id].name : null,
+        last_seen_place: r.last_seen_place,
+        last_seen_time: r.last_seen_time,
+      }));
+  }
+
+  /* Original contract routes */
   if (method === "POST" && path === "/api/missing") {
+    needRole("family");
     const id = "M" + state.nextMissing++;
-    state.missing[id] = Object.assign({}, body, { status: "searching" });
+    state.missing[id] = Object.assign({}, body, { owner: email });
+    const p = body.member_id && state.members[body.member_id];
+    if (p && p.owner === email) p.report_id = id;
     mockSave();
     return { id, status: "searching" };
   }
@@ -301,7 +488,7 @@ async function mockApi(method, path, body, pin) {
   }
 
   if (method === "POST" && path === "/api/found") {
-    needAuth();
+    isStaff();
     const id = "F" + state.nextFound++;
     state.found[id] = Object.assign({}, body);
     mockSave();
@@ -309,23 +496,23 @@ async function mockApi(method, path, body, pin) {
   }
 
   if (method === "GET" && path === "/api/missing") {
-    needAuth();
+    isStaff();
     return Object.entries(state.missing).map(([id, r]) =>
-      Object.assign({}, r, { id, status: mockStatus(state, id), summary: summarize(r) }));
+      Object.assign(cleanReport(id, r), { status: mockStatus(state, id), summary: summarize(r) }));
   }
 
   if (method === "GET" && (m = path.match(/^\/api\/matches\/([^/]+)$/))) {
-    needAuth();
+    isStaff();
     const id = decodeURIComponent(m[1]);
     if (!state.missing[id]) fail(404, "Report not found.");
     return { missing_id: id, candidates: mockCandidates(state, id) };
   }
 
   if (method === "POST" && (m = path.match(/^\/api\/matches\/([^/]+)\/decision$/))) {
-    needAuth();
+    isStaff();
     const id = decodeURIComponent(m[1]);
     if (!state.missing[id]) fail(404, "Report not found.");
-    if (!body || !state.found[body.found_id]) fail(400, "Unknown found_id.");
+    if (!state.found[body.found_id]) fail(400, "Unknown found_id.");
     if (body.decision === "confirm") state.confirmed[id] = body.found_id;
     else if (body.decision === "reject") {
       (state.rejected[id] = state.rejected[id] || []).push(body.found_id);
@@ -348,6 +535,19 @@ async function mockApi(method, path, body, pin) {
 
 /* ---------- Form helpers ---------- */
 
+const PERSON_LABELS = {
+  age_min: "Lowest age", age_max: "Highest age", gender: "Gender", height_cm: "Height",
+  hair: "Hair", clothing: "Clothing", marks: "Distinguishing marks",
+  last_seen_place: "The place they were last seen", last_seen_date: "The date they were last seen",
+  found_place: "Where they were found", found_date: "The date they were found",
+  current_location: "Current location",
+  description: "Description", contact: "Your contact details",
+  name: "Name", email: "Email", password: "Password", phone: "Phone number",
+  relationship: "Relationship", age: "Age",
+  agency: "Agency or organisation", position: "Job title", staff_id: "Staff or badge number",
+  reason: "Reason for access",
+};
+
 function readForm(form, fields) {
   const out = {};
   for (const name of fields) {
@@ -363,28 +563,42 @@ function readForm(form, fields) {
   return out;
 }
 
+// Combines the "date" and optional "time" inputs into one ISO string like 2026-10-17T14:30.
+function joinDateTime(data, prefix, target) {
+  const date = data[prefix + "_date"], time = data[prefix + "_clock"];
+  delete data[prefix + "_date"];
+  delete data[prefix + "_clock"];
+  if (date) data[target] = date + "T" + (time || "00:00");
+}
+
 function setFieldError(form, name, msg) {
   const input = form.elements[name];
+  if (!input) return;
   const box = $("#" + input.id + "-error", form);
   if (msg) input.setAttribute("aria-invalid", "true");
   else input.removeAttribute("aria-invalid");
   if (box) box.textContent = msg || "";
 }
 
-// Validates a person record. `required` lists required field names.
-function validatePerson(form, data, required, labels) {
+function clearFieldErrors(form) {
+  for (const input of form.querySelectorAll("[aria-invalid]")) setFieldError(form, input.name, "");
+  for (const box of form.querySelectorAll(".field-error")) box.textContent = "";
+}
+
+// Checks required fields plus age, height and email rules. Returns a list of { name, msg }.
+function validate(form, data, required) {
   const errors = [];
   const add = (name, msg) => { errors.push({ name, msg }); setFieldError(form, name, msg); };
 
-  for (const input of form.querySelectorAll("[aria-invalid]")) setFieldError(form, input.name, "");
+  clearFieldErrors(form);
 
   for (const name of required) {
-    if (data[name] === undefined) add(name, "Please fill in " + labels[name].toLowerCase() + ".");
+    if (data[name] === undefined) add(name, "Please fill in " + PERSON_LABELS[name].toLowerCase() + ".");
   }
-  for (const name of ["age_min", "age_max"]) {
+  for (const name of ["age_min", "age_max", "age"]) {
     const v = data[name];
     if (v !== undefined && (!Number.isInteger(v) || v < 0 || v > 120)) {
-      add(name, labels[name] + " must be a whole number from 0 to 120.");
+      add(name, PERSON_LABELS[name] + " must be a whole number from 0 to 120.");
     }
   }
   if (Number.isInteger(data.age_min) && Number.isInteger(data.age_max) && data.age_min > data.age_max &&
@@ -393,6 +607,9 @@ function validatePerson(form, data, required, labels) {
   }
   if (data.height_cm !== undefined && (isNaN(data.height_cm) || data.height_cm < 30 || data.height_cm > 250)) {
     add("height_cm", "Height should be between 30 and 250 cm, or left empty.");
+  }
+  if (data.email !== undefined && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)) {
+    add("email", "Please enter a valid email address, like name@example.com.");
   }
   return errors;
 }
@@ -423,272 +640,91 @@ function markMockMode() {
   }
 }
 
-/* ---------- Family page ---------- */
+// Sends the visitor to `loginUrl` unless they are logged in with one of `roles`.
+async function requireUser(roles, loginUrl) {
+  const u = await currentUser();
+  if (u && roles.includes(u.role)) return u;
+  location.replace(loginUrl);
+  return null;
+}
 
-const PERSON_LABELS = {
-  age_min: "Lowest age", age_max: "Highest age", gender: "Gender", height_cm: "Height",
-  hair: "Hair", clothing: "Clothing", marks: "Distinguishing marks",
-  last_seen_place: "Where they were last seen", last_seen_time: "When they were last seen",
-  found_place: "Where found", found_time: "When found", current_location: "Current location",
-  description: "Description", contact: "Your contact details",
-};
+function goToLogin(loginUrl) {
+  location.replace(loginUrl + "?expired=1");
+}
 
-function initFamily() {
-  const form = $("#missing-form");
-  const msg = $("#missing-message");
-  const fields = ["age_min", "age_max", "gender", "height_cm", "hair", "clothing", "marks",
-    "last_seen_place", "last_seen_time", "description", "contact"];
-  const required = ["age_min", "age_max", "gender", "last_seen_place", "last_seen_time", "description", "contact"];
+function showExpiredNotice(box) {
+  if (new URLSearchParams(location.search).has("expired")) {
+    showMessage(box, "error", "Your session has ended. Please log in again.");
+  }
+}
 
+// Adds Show/Hide to every password box that has a .pw-toggle button next to it.
+function setupPasswordToggles() {
+  for (const btn of document.querySelectorAll(".pw-toggle")) {
+    const input = document.getElementById(btn.getAttribute("aria-controls"));
+    btn.addEventListener("click", () => {
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.textContent = showing ? "Show" : "Hide";
+      btn.setAttribute("aria-pressed", String(!showing));
+    });
+  }
+}
+
+// Password rules shared by both sign-up forms. Adds errors to `errors`.
+function checkNewPassword(form, data, errors) {
+  if (data.password && data.password.length < 8 && !errors.some(e => e.name === "password")) {
+    errors.push({ name: "password", msg: "Password must be at least 8 characters." });
+    setFieldError(form, "password", "Password must be at least 8 characters.");
+  }
+  if (data.password && data.password !== data.password2) {
+    errors.push({ name: "password2", msg: "The two passwords do not match." });
+    setFieldError(form, "password2", "The two passwords do not match.");
+  }
+  delete data.password2;
+}
+
+// Requires a ticked consent checkbox called `name`.
+function checkConsent(form, name, msg, errors) {
+  const box = form.elements[name];
+  const errBox = $("#" + box.id + "-error", form);
+  if (!box.checked) {
+    errors.push({ name, msg });
+    box.setAttribute("aria-invalid", "true");
+    if (errBox) errBox.textContent = msg;
+  } else {
+    box.removeAttribute("aria-invalid");
+    if (errBox) errBox.textContent = "";
+  }
+}
+
+async function currentUser() {
+  try { return (await api("GET", "/api/auth/me")).user; } catch (e) { return null; }
+}
+
+// Wires up a login form. onDone(user) runs after a successful login.
+function setupLogin(form, box, role, onDone) {
   form.addEventListener("submit", async ev => {
     ev.preventDefault();
-    clearMessage(msg);
-    const data = readForm(form, fields);
-    const errors = validatePerson(form, data, required, PERSON_LABELS);
-    if (errors.length) { showMessage(msg, "error", errorSummary(form, errors)); return; }
-
+    clearMessage(box);
+    const data = readForm(form, ["email", "password"]);
+    const errors = validate(form, data, ["email", "password"]);
+    if (errors.length) { showMessage(box, "error", errorSummary(form, errors)); return; }
     await withBusy(form.querySelector("button[type=submit]"), async () => {
       try {
-        const res = await api("POST", "/api/missing", data);
+        const res = await api("POST", "/api/auth/login", Object.assign(data, { role }));
         form.reset();
-        showMessage(msg, "success", [
-          el("strong", { text: "Your report has been received." }),
-          el("p", { text: "Your report number is:" }),
-          el("span", { class: "report-id", text: res.id }),
-          el("p", null, [el("strong", { text: "Save this number." }), " You will need it to check the status of your report."]),
-        ]);
-        $("#status-id").value = res.id;
+        onDone(res.user);
       } catch (e) {
-        showMessage(msg, "error", e.message);
-      }
-    });
-  });
-
-  const sForm = $("#status-form");
-  const sMsg = $("#status-message");
-  sForm.addEventListener("submit", async ev => {
-    ev.preventDefault();
-    clearMessage(sMsg);
-    const id = sForm.elements.report_id.value.trim().toUpperCase();
-    if (!id) {
-      setFieldError(sForm, "report_id", "Please enter your report number.");
-      showMessage(sMsg, "error", "Please enter your report number.");
-      return;
-    }
-    setFieldError(sForm, "report_id", "");
-    await withBusy(sForm.querySelector("button[type=submit]"), async () => {
-      try {
-        const res = await api("GET", "/api/status/" + encodeURIComponent(id));
-        const explain = {
-          searching: "We are still looking. New information is checked as it arrives.",
-          under_review: "A trained person is checking a possible match. You will be contacted if it is confirmed.",
-          reunited: "This report has been confirmed as a match. Officials will contact you with details.",
-        };
-        showMessage(sMsg, "", [
-          el("p", { text: "Report " + res.id + ":" }),
-          statusPill(res.status, true),
-          el("p", { text: explain[res.status] || "" }),
-        ]);
-      } catch (e) {
-        showMessage(sMsg, "error", e.status === 404 ? "We could not find a report with that number. Please check it and try again." : e.message);
+        showMessage(box, "error", e.status === 401 ? "Email or password is incorrect." : e.message);
       }
     });
   });
 }
 
-/* ---------- Authority page ---------- */
-
-function initAuthority() {
-  const gate = $("#pin-gate");
-  const dash = $("#dashboard");
-  const pinForm = $("#pin-form");
-  const pinMsg = $("#pin-message");
-  let reports = [];
-  let selected = null;
-
-  function lock(message) {
-    clearPin();
-    dash.classList.add("hidden");
-    gate.classList.remove("hidden");
-    if (message) showMessage(pinMsg, "error", message);
-    pinForm.elements.pin.focus();
-  }
-
-  async function guarded(fn, box) {
-    try { return await fn(); } catch (e) {
-      if (e.status === 401 || e.status === 403) lock("That access code was not accepted. Please enter it again.");
-      else if (box) showMessage(box, "error", e.message);
-      throw e;
-    }
-  }
-
-  pinForm.addEventListener("submit", async ev => {
-    ev.preventDefault();
-    const pin = pinForm.elements.pin.value.trim();
-    if (!pin) { showMessage(pinMsg, "error", "Please enter the access code."); return; }
-    setPin(pin);
-    pinForm.reset();
-    clearMessage(pinMsg);
-    await unlock();
-  });
-
-  $("#lock-button").addEventListener("click", () => lock());
-
-  async function unlock() {
-    try { await loadReports(); } catch (e) { return; }
-    gate.classList.add("hidden");
-    dash.classList.remove("hidden");
-    $("#dash-heading").focus();
-  }
-
-  async function loadReports() {
-    const box = $("#reports-message");
-    clearMessage(box);
-    reports = await guarded(() => api("GET", "/api/missing", undefined, { auth: true }), box);
-    renderReports();
-  }
-
-  function renderReports() {
-    const body = $("#reports-body");
-    body.replaceChildren(...reports.map(r => el("tr", { class: r.id === selected ? "selected" : null }, [
-      el("td", null, [el("button", {
-        class: "link", text: r.id,
-        "aria-label": "Review matches for report " + r.id,
-        onclick: () => openReview(r.id),
-      })]),
-      el("td", { text: r.summary || summarize(r) }),
-      el("td", null, [statusPill(r.status)]),
-    ])));
-    $("#reports-empty").classList.toggle("hidden", reports.length > 0);
-  }
-
-  // Found-person form
-  const fForm = $("#found-form");
-  const fMsg = $("#found-message");
-  const fFields = ["age_min", "age_max", "gender", "height_cm", "hair", "clothing", "marks",
-    "found_place", "found_time", "current_location", "description"];
-  const fRequired = ["age_min", "age_max", "gender", "found_place", "found_time", "current_location"];
-  fForm.addEventListener("submit", async ev => {
-    ev.preventDefault();
-    clearMessage(fMsg);
-    const data = readForm(fForm, fFields);
-    const errors = validatePerson(fForm, data, fRequired, PERSON_LABELS);
-    if (errors.length) { showMessage(fMsg, "error", errorSummary(fForm, errors)); return; }
-    await withBusy(fForm.querySelector("button[type=submit]"), async () => {
-      try {
-        const res = await guarded(() => api("POST", "/api/found", data, { auth: true }), fMsg);
-        fForm.reset();
-        showMessage(fMsg, "success", "Found person saved as " + res.id + ". Match suggestions will update.");
-        await loadReports();
-        if (selected) await openReview(selected, true);
-      } catch (e) { /* already shown */ }
-    });
-  });
-
-  // Match review
-  const review = $("#review");
-
-  async function openReview(id, keepFocus) {
-    selected = id;
-    renderReports();
-    review.classList.remove("hidden");
-    const list = $("#candidates");
-    const box = $("#review-message");
-    clearMessage(box);
-    $("#review-heading").textContent = "Possible matches for report " + id;
-    list.replaceChildren(el("p", { text: "Loading suggestions…" }));
-    let data;
-    try {
-      data = await guarded(() => api("GET", "/api/matches/" + encodeURIComponent(id), undefined, { auth: true }), box);
-    } catch (e) { list.replaceChildren(); return; }
-
-    const report = reports.find(r => r.id === id) || {};
-    const cands = data.candidates || [];
-    list.replaceChildren(...(cands.length
-      ? cands.map((c, i) => candidateCard(id, report, c, i + 1))
-      : [el("p", { text: "No suggested matches yet. Suggestions appear as found people are added." })]));
-    if (!keepFocus) $("#review-heading").focus();
-  }
-
-  function recordList(rows) {
-    return el("dl", null, rows.flatMap(([label, value]) =>
-      value === undefined || value === null || value === "" ? [] : [el("dt", { text: label }), el("dd", { text: String(value) })]));
-  }
-
-  function personRows(r, kind) {
-    const age = r.age_min !== undefined ? r.age_min + "–" + r.age_max : undefined;
-    const rows = [["Age", age], ["Gender", r.gender], ["Height", r.height_cm && r.height_cm + " cm"],
-      ["Hair", r.hair], ["Clothing", r.clothing], ["Marks", r.marks]];
-    if (kind === "missing") {
-      rows.push(["Last seen", r.last_seen_place], ["Last seen at", formatTime(r.last_seen_time)]);
-    } else {
-      rows.push(["Found at", r.found_place], ["Found on", formatTime(r.found_time)], ["Now at", r.current_location]);
-    }
-    rows.push(["Description", r.description]);
-    return rows;
-  }
-
-  function candidateCard(mid, report, c, rank) {
-    const score = Math.max(0, Math.min(100, Math.round(c.score)));
-    const headingId = "cand-" + c.found_id;
-    const box = el("div", { class: "message", role: "status", tabindex: "-1" });
-
-    async function decide(decision, btn) {
-      if (decision === "confirm" && !confirm("Confirm that report " + mid + " and found person " + c.found_id +
-          " are the same person? Only confirm after checking in person or with documents.")) return;
-      await withBusy(btn, async () => {
-        try {
-          await guarded(() => api("POST", "/api/matches/" + encodeURIComponent(mid) + "/decision",
-            { found_id: c.found_id, decision }, { auth: true }), box);
-          await loadReports();
-          await openReview(mid, true);
-          showMessage($("#review-message"), "success",
-            decision === "confirm" ? "Match with " + c.found_id + " confirmed. The family will see “Reunited”."
-              : "Suggestion " + c.found_id + " rejected.");
-        } catch (e) { /* already shown */ }
-      });
-    }
-
-    return el("article", { class: "card candidate", "aria-labelledby": headingId }, [
-      el("div", { class: "candidate-head" }, [
-        el("h3", { id: headingId, text: "#" + rank + " · Found person " + c.found_id }),
-        el("span", { class: "score-label", text: "Score " + score + " / 100" }),
-      ]),
-      el("div", {
-        class: "score-bar", role: "meter", "aria-valuemin": "0", "aria-valuemax": "100",
-        "aria-valuenow": String(score), "aria-label": "Match score",
-      }, [el("div", { class: "score-fill", style: "width:" + score + "%" })]),
-      el("h4", { text: "Why this was suggested" }),
-      el("ul", { class: "reasons" }, (c.reasons || []).map(r => el("li", null, [
-        el("span", { class: "mark " + (r.matched ? "yes" : "no"), "aria-hidden": "true", text: r.matched ? "✓" : "✗" }),
-        el("span", { class: "sr-only", text: r.matched ? "Matches: " : "Does not match: " }),
-        el("span", { text: r.label }),
-      ]))),
-      el("div", { class: "compare" }, [
-        el("section", { "aria-label": "Missing report " + mid }, [el("h4", { text: "Missing report " + mid }), recordList(personRows(report, "missing"))]),
-        el("section", { "aria-label": "Found record " + c.found_id }, [el("h4", { text: "Found record " + c.found_id }), recordList(personRows(c.found || {}, "found"))]),
-      ]),
-      el("div", { class: "actions" }, [
-        el("button", { type: "button", class: "confirm", text: "Confirm match", onclick: e => decide("confirm", e.currentTarget) }),
-        el("button", { type: "button", class: "reject", text: "Reject", onclick: e => decide("reject", e.currentTarget) }),
-      ]),
-      box,
-    ]);
-  }
-
-  const resetBtn = $("#mock-reset");
-  if (USE_MOCK && resetBtn) {
-    resetBtn.classList.remove("hidden");
-    resetBtn.addEventListener("click", async () => {
-      mockReset();
-      selected = null;
-      review.classList.add("hidden");
-      await loadReports();
-    });
-  }
-
-  if (USE_MOCK) $("#pin-hint").textContent = "Demo mode: any code is accepted. The real server checks the code.";
-  if (getPin()) unlock();
+function recordList(rows) {
+  return el("dl", null, rows.flatMap(([label, value]) =>
+    value === undefined || value === null || value === "" ? [] : [el("dt", { text: label }), el("dd", { text: String(value) })]));
 }
 
 /* ---------- Platform page ---------- */
@@ -718,10 +754,13 @@ async function initPlatform() {
 
 /* ---------- Boot ---------- */
 
+// Portal scripts (family/family.js, authority/authority.js) register their
+// page setup functions here. Deferred scripts all run before DOMContentLoaded.
+const PAGES = { platform: initPlatform };
+
 document.addEventListener("DOMContentLoaded", () => {
   markMockMode();
-  const page = document.body.dataset.page;
-  if (page === "family") initFamily();
-  else if (page === "authority") initAuthority();
-  else if (page === "platform") initPlatform();
+  setupPasswordToggles();
+  const init = PAGES[document.body.dataset.page];
+  if (init) init();
 });

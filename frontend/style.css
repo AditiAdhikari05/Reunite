@@ -54,7 +54,7 @@ a { color: var(--primary); }
 
 /* Header and navigation */
 .site-header {
-  background: var(--primary);
+  background: var(--header-bg, var(--primary));
   color: var(--primary-text);
 }
 .site-header .inner {
@@ -292,4 +292,121 @@ tr.selected { background: #e8eef6; }
 
 @media (prefers-reduced-motion: reduce) {
   .bench-fill { transition: none; }
+}
+
+/* Accounts and family */
+.auth-card { max-width: 34rem; }
+.tabs { display: flex; gap: .5rem; border-bottom: 2px solid var(--border); margin: -.25rem 0 1.25rem; }
+.tabs [role="tab"] {
+  background: none; color: var(--muted); border: none; border-bottom: 4px solid transparent;
+  border-radius: 0; padding: .5rem .8rem; margin-bottom: -2px;
+}
+.tabs [role="tab"]:hover { background: #e8eef6; }
+.tabs [role="tab"][aria-selected="true"] { color: var(--primary); border-bottom-color: var(--primary); }
+
+.member-list { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
+.member-list .card { margin: 0; background: var(--bg); }
+.member-list dl { display: grid; grid-template-columns: auto 1fr; gap: .15rem .75rem; margin: .25rem 0 .75rem; }
+.member-list dt { color: var(--muted); font-weight: 600; font-size: .9rem; }
+.member-list dd { margin: 0; overflow-wrap: anywhere; }
+.sub-form { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+
+.plain-fieldset { border: 0; padding: 0; margin: 0 0 1rem; min-width: 0; }
+.when-where { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: .75rem; }
+.sub-label { font-weight: 400; color: var(--muted); font-size: .9rem; }
+@media (max-width: 40rem) {
+  .when-where { grid-template-columns: 1fr 1fr; }
+  .when-where > :first-child { grid-column: 1 / -1; }
+}
+
+/* ---------- Portals ---------- */
+/* Authority portal gets its own darker, "internal tool" identity. */
+body.portal-authority {
+  --header-bg: #18212c;
+  --primary: #0f5f56;
+  --primary-hover: #0a4740;
+  --bg: #eef1f4;
+}
+
+.brand { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: .6rem; }
+.portal-tag {
+  font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: .15rem .55rem; border-radius: 999px; border: 1.5px solid currentColor; opacity: .9;
+}
+.user-menu { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.user-menu .who { font-size: .95rem; }
+.site-header button.secondary { min-height: 2.4rem; padding: .35rem .9rem; }
+
+a.button { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+a.button:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.button.secondary { background: var(--surface); color: var(--primary); }
+a.button.secondary:hover { background: #e8eef6; }
+
+/* ---------- Welcome page ---------- */
+.hero { text-align: center; padding: 1.5rem 0 1rem; }
+.hero h1 { font-size: 2.2rem; margin-bottom: .5rem; }
+.hero .lead { max-width: 38rem; margin: 0 auto; }
+.role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1.25rem; margin: 1.5rem 0; }
+.role-card { display: flex; flex-direction: column; border-width: 2px; margin: 0; }
+.role-card .role-icon {
+  width: 3rem; height: 3rem; border-radius: 12px; display: grid; place-items: center;
+  font-size: 1.5rem; margin-bottom: .75rem;
+}
+.role-card.family .role-icon { background: #e3eefa; }
+.role-card.authority { border-color: #18212c; }
+.role-card.authority .role-icon { background: #18212c; color: #fff; }
+.role-card ul { padding-left: 1.2rem; margin: .25rem 0 1.25rem; flex: 1; }
+.role-card .actions { margin-top: auto; }
+.role-card.authority .button { background: #0f5f56; border-color: #0f5f56; }
+.role-card.authority .button.secondary { background: var(--surface); color: #0f5f56; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; padding: 0; list-style: none; counter-reset: step; }
+.steps li { counter-increment: step; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+.steps li::before {
+  content: counter(step); display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem;
+  border-radius: 50%; background: var(--primary); color: var(--primary-text); font-weight: 700; margin-bottom: .4rem;
+}
+
+/* ---------- Login and sign-up pages ---------- */
+.auth-shell {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden; margin: 1rem auto 0; max-width: 56rem;
+  box-shadow: 0 6px 24px rgba(20, 24, 31, .08);
+}
+.auth-aside { background: var(--header-bg, var(--primary)); color: #fff; padding: 2rem; }
+.auth-aside h2 { font-size: 1.5rem; }
+.auth-aside p, .auth-aside li { color: #e6ecf3; }
+.auth-aside ul { padding-left: 1.2rem; }
+.auth-main { padding: 2rem; }
+.auth-main h1 { margin-top: 0; }
+.auth-switch { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.auth-other { font-size: .95rem; color: var(--muted); }
+.restricted {
+  display: flex; gap: .6rem; align-items: flex-start; background: #fff4d6; border: 1.5px solid #b07800;
+  border-radius: 8px; padding: .6rem .8rem; font-size: .95rem; margin-bottom: 1.25rem; color: #3b2a00;
+}
+
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 4.75rem; }
+.pw-toggle {
+  position: absolute; right: .35rem; top: 50%; transform: translateY(-50%);
+  min-height: 0; padding: .3rem .65rem; background: none; border: none; color: var(--primary); font-size: .95rem;
+}
+.pw-toggle:hover { background: #e8eef6; }
+
+.check { display: flex; gap: .65rem; align-items: flex-start; font-weight: 400; }
+.check input { width: 1.4rem; height: 1.4rem; min-height: 0; margin: .15rem 0 0; flex: 0 0 auto; accent-color: var(--primary); }
+
+.request-list { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: .75rem; }
+.request-list li { border: 1px solid var(--border); border-radius: 8px; padding: .8rem 1rem; background: var(--bg); }
+.request-list dl { display: grid; grid-template-columns: auto 1fr; gap: .1rem .75rem; margin: .4rem 0 .6rem; }
+.request-list dt { color: var(--muted); font-weight: 600; font-size: .9rem; }
+.request-list dd { margin: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 44rem) {
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-aside { padding: 1.25rem; }
+  .auth-aside ul { display: none; }
+  .auth-main { padding: 1.25rem; }
+  .hero h1 { font-size: 1.7rem; }
 }

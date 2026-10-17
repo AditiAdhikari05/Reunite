@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create a family account · DisasterBridge</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../app.js" defer></script>
+  <script src="family.js" defer></script>
+</head>
+<body data-page="family-signup" class="portal-family">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="../index.html">DisasterBridge <span class="portal-tag">Family portal</span></a>
+      <nav class="site-nav" aria-label="Main">
+        <ul><li><a href="../index.html">← Home</a></li></ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <p id="mock-indicator"></p>
+    <div class="auth-shell">
+      <aside class="auth-aside">
+        <h2>Create your free account</h2>
+        <p>It takes about a minute. With an account you can:</p>
+        <ul>
+          <li>Report a missing person</li>
+          <li>Save details of your family members in advance</li>
+          <li>Check the status of every report you make</li>
+        </ul>
+      </aside>
+
+      <section class="auth-main" aria-labelledby="signup-title">
+        <h1 id="signup-title">Create a family account</h1>
+        <form id="signup-form" novalidate>
+          <div class="field">
+            <label for="su-name">Your full name</label>
+            <input id="su-name" name="name" type="text" autocomplete="name" required aria-describedby="su-name-error">
+            <p id="su-name-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="su-email">Email</label>
+            <input id="su-email" name="email" type="email" autocomplete="email" required aria-describedby="su-email-error">
+            <p id="su-email-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="su-phone">Phone number <span class="hint">So officials can reach you</span></label>
+            <input id="su-phone" name="phone" type="tel" autocomplete="tel" required aria-describedby="su-phone-error">
+            <p id="su-phone-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="su-password">Password <span class="hint">At least 8 characters</span></label>
+            <div class="pw-wrap">
+              <input id="su-password" name="password" type="password" autocomplete="new-password" required aria-describedby="su-password-error">
+              <button type="button" class="pw-toggle" aria-controls="su-password" aria-pressed="false">Show</button>
+            </div>
+            <p id="su-password-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label for="su-password2">Type the password again</label>
+            <div class="pw-wrap">
+              <input id="su-password2" name="password2" type="password" autocomplete="new-password" required aria-describedby="su-password2-error">
+              <button type="button" class="pw-toggle" aria-controls="su-password2" aria-pressed="false">Show</button>
+            </div>
+            <p id="su-password2-error" class="field-error"></p>
+          </div>
+          <div class="field">
+            <label class="check" for="su-consent">
+              <input id="su-consent" name="consent" type="checkbox" required aria-describedby="su-consent-error">
+              <span>I agree that the information I give can be shared with authorised rescue staff to help find my family.</span>
+            </label>
+            <p id="su-consent-error" class="field-error"></p>
+          </div>
+          <div class="actions"><button type="submit">Create account</button></div>
+        </form>
+        <div id="signup-message" class="message" role="alert" tabindex="-1"></div>
+
+        <div class="auth-switch">
+          <p>Already have an account? <a href="login.html">Log in</a></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">Demo using synthetic data only.</footer>
+</body>
+</html>
