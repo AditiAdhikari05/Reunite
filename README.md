@@ -1,6 +1,8 @@
 # Reunite
 
-A prototype for the IBM Z Datathon that helps reunite families after a disaster.
+A prototype for the IBM Z Datathon that helps reunite families after a disaster. Formerly called DisasterBridge-AI.
+
+Repository: <https://github.com/AditiAdhikari05/Reunite>
 
 - **Families** report people who are missing.
 - **Authorities** (rescue, shelter, hospital and police staff) record people they have found.
@@ -10,30 +12,21 @@ A prototype for the IBM Z Datathon that helps reunite families after a disaster.
 
 The app runs on **IBM LinuxONE** (Linux on IBM Z, `s390x`). The Flask API and the matching engine run on the server, so sensitive data stays there.
 
-> Demo using synthetic data only. Do not enter real personal information.
 
-## Current status
-
-| Part | Owner | Status |
-|---|---|---|
-| Frontend (`frontend/`) | Aditi | Done. Runs in **mock mode** with synthetic data |
-| Flask backend | Swastik | In progress. Planned at `http://148.100.76.31:5000` (not reachable yet) |
-| Account routes (sign-up, login, admin) | Swastik | **Needed.** Not in the original backend contract |
-| Matching engine | Team | In progress. The frontend shows mock scores for now |
-| Benchmark numbers | Team | **Placeholders, not measured results** |
 
 ## Run the frontend locally
 
-You only need Python 3. There is no Node, no npm and no build step.
+You only need Python 3 and Git. There is no Node, no npm and no build step.
 
 ```bash
-cd frontend
+git clone https://github.com/AditiAdhikari05/Reunite.git
+cd Reunite/frontend
 python3 -m http.server 5500
 ```
 
 Then open <http://localhost:5500/>. Use the local server instead of double-clicking the HTML files, because pages opened as `file://` cannot share demo data.
 
-### Demo logins (mock mode only)
+### Demo logins 
 
 | Portal | Email | Password | PIN |
 |---|---|---|---|
