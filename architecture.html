@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reunite Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Serif:wght@700&display=swap">
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --tile: #ffffff;
+    --ink: #161b26;
+    --muted: #5a6372;
+    --line: #d5dae2;
+    --accent: #b5532a;
+    --chip-bg: #e7eaef;
+    --dark: #18213a;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: "IBM Plex Serif", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.45; }
+  .page { max-width: 72rem; margin: 0 auto; padding: 3rem 1.5rem; display: grid; gap: 2.5rem; }
+
+  .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .06em; font-size: .85rem; text-transform: uppercase; }
+  h1 { font-family: var(--serif); font-size: clamp(1.8rem, 4.5vw, 3rem); line-height: 1.1; margin: .5rem 0 0; }
+  h2.section { font-family: var(--serif); font-size: 1.5rem; margin: .35rem 0 1rem; }
+  .sub { color: var(--muted); margin: .6rem 0 0; max-width: 60ch; }
+
+  /* Architecture */
+  .layout { display: grid; grid-template-columns: 11rem auto 1fr; gap: 1.25rem; align-items: center; }
+  .label { font-size: .8rem; font-weight: 700; letter-spacing: .05em; color: var(--muted); text-transform: uppercase; margin-bottom: .6rem; }
+  .users { display: grid; gap: .6rem; }
+  .user { background: var(--tile); border: 1px solid var(--line); border-radius: 999px; padding: .55rem 1rem; font-weight: 600; }
+  .arrow { font-size: 1.6rem; }
+  .box { border: 2px dashed var(--muted); border-radius: 14px; padding: 1.1rem; }
+  .box .label { color: var(--ink); }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; }
+  .tile { background: var(--tile); border: 1px solid var(--line); border-radius: 10px; padding: .9rem 1rem; }
+  .tile h3 { font-size: 1.1rem; margin: 0 0 .2rem; }
+  .tile p { margin: 0; color: var(--muted); font-size: .95rem; }
+  .tile.chip { background: var(--dark); border-color: var(--dark); }
+  .tile.chip h3 { color: #ffffff; }
+  .tile.chip p { color: #d6dbe6; }
+
+  /* Flow */
+  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: .5rem; list-style: none; padding: 0; margin: 0; counter-reset: step; }
+  .flow li { position: relative; background: var(--tile); border: 1px solid var(--line); border-radius: 10px; padding: .8rem .9rem; counter-increment: step; }
+  .flow li::before { content: counter(step); display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--accent); color: #ffffff; font-weight: 700; font-size: .8rem; margin-bottom: .4rem; }
+  .flow strong { display: block; }
+  .flow span { color: var(--muted); font-size: .9rem; }
+  .flow .ai { display: block; font-style: normal; margin-top: .4rem; font-size: .75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
+
+  /* Capabilities */
+  .caps { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; }
+  .cap { background: var(--tile); border: 1px solid var(--line); border-radius: 10px; padding: .9rem 1rem; }
+  .cap h3 { font-size: 1.05rem; margin: 0 0 .25rem; }
+  .cap p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .cap b { color: var(--ink); }
+
+  /* Results */
+  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; }
+  .result { border-top: 3px solid var(--accent); padding-top: .6rem; }
+  .result strong { display: block; font-size: 1.6rem; font-family: var(--serif); }
+  .result span { color: var(--muted); font-size: .95rem; }
+
+  /* Open source */
+  .oss { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .oss a { background: var(--chip-bg); border-radius: 999px; padding: .35rem .85rem; font-size: .92rem; color: var(--ink); text-decoration: none; }
+  .oss a:hover { text-decoration: underline; }
+
+  .note { color: var(--muted); font-size: .9rem; margin: 0; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .users { grid-template-columns: repeat(3, 1fr); }
+    .arrow { transform: rotate(90deg); justify-self: center; }
+    .tiles, .caps { grid-template-columns: 1fr 1fr; }
+    .flow { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 520px) {
+    .tiles, .caps, .flow, .results, .users { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+
+    <header>
+      <div class="eyebrow">Reunite · IBM Z Datathon 2026 · Track 2: AI Secured</div>
+      <h1>Everything runs inside one LinuxONE server</h1>
+      <p class="sub">Reunite matches missing-person reports with people found after a disaster. It combines predictive AI and generative AI, and no report leaves the server.</p>
+    </header>
+
+    <section aria-labelledby="arch">
+      <div class="eyebrow">Architecture</div>
+      <h2 class="section" id="arch">System overview</h2>
+      <div class="layout">
+        <div>
+          <div class="label">Who uses it</div>
+          <div class="users">
+            <div class="user">Families</div>
+            <div class="user">The public</div>
+            <div class="user">Authorities</div>
+          </div>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="box">
+          <div class="label">IBM LinuxONE · s390x · Docker container · no outside AI calls</div>
+          <div class="tiles">
+            <div class="tile"><h3>Web portals</h3><p>HTML, CSS, JS for families, public and staff</p></div>
+            <div class="tile"><h3>Flask API</h3><p>Session login, role checks, hashed passwords</p></div>
+            <div class="tile"><h3>Records</h3><p>Reports, found people and decisions on the server</p></div>
+            <div class="tile"><h3>Report reader</h3><p>Generative AI: IBM Granite + grounding check</p></div>
+            <div class="tile"><h3>Matching engine</h3><p>Predictive AI: 33 clues, logistic regression, reasons</p></div>
+            <div class="tile chip"><h3>AI chip (NNPA)</h3><p>Granite and MiniLM on the Telum accelerator</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="flow">
+      <div class="eyebrow">Solution flowchart</div>
+      <h2 class="section" id="flow">From report to reunion</h2>
+      <ol class="flow">
+        <li><strong>Report arrives</strong><span>A family reports someone missing, or staff or the public report someone found</span></li>
+        <li><strong>Read the text</strong><span>Granite pulls out hair, clothing and marks, keeping only words in the report</span><em class="ai">Generative AI · chip</em></li>
+        <li><strong>Score every pair</strong><span>The model ranks likely matches with a score and reasons</span><em class="ai">Predictive AI</em></li>
+        <li><strong>Staff review</strong><span>A trained person confirms or rejects each suggestion</span></li>
+        <li><strong>Family sees status</strong><span>Searching, Possible match, or Reunited. Never other people's details</span></li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="caps">
+      <div class="eyebrow">LinuxONE capabilities used</div>
+      <h2 class="section" id="caps">Why LinuxONE</h2>
+      <div class="caps">
+        <div class="cap"><h3>Compute</h3><p>Telum on-chip AI accelerator: MiniLM <b>9.4×</b> and Granite <b>6.9×</b> faster than the CPU, same output</p></div>
+        <div class="cap"><h3>Security</h3><p>Sensitive reports stay on one server. No cloud AI API. Role-based access, hashed passwords</p></div>
+        <div class="cap"><h3>Containerization</h3><p>The app, models and data run in a Docker container on LinuxONE Community Cloud</p></div>
+        <div class="cap"><h3>Scalability</h3><p>All report pairs are scored in one batch: <b>235,025</b> pairs in <b>0.4 s</b></p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="res">
+      <div class="eyebrow">Measured on the server</div>
+      <h2 class="section" id="res">Results</h2>
+      <div class="results">
+        <div class="result"><strong>92.6%</strong><span>right person in the top 5, vs 18.9% for keyword search</span></div>
+        <div class="result"><strong>75%</strong><span>clothing read correctly from new wording, vs 14% for rules alone</span></div>
+        <div class="result"><strong>0.4 s</strong><span>to re-score all 235,025 report pairs</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="stack">
+      <div class="eyebrow">Open-source tools</div>
+      <h2 class="section" id="stack">Tech stack</h2>
+      <div class="oss">
+        <a href="https://www.python.org/" target="_blank" rel="noopener">Python 3.12</a>
+        <a href="https://flask.palletsprojects.com/" target="_blank" rel="noopener">Flask</a>
+        <a href="https://scikit-learn.org/" target="_blank" rel="noopener">scikit-learn</a>
+        <a href="https://numpy.org/" target="_blank" rel="noopener">NumPy</a>
+        <a href="https://pandas.pydata.org/" target="_blank" rel="noopener">pandas</a>
+        <a href="https://pytorch.org/" target="_blank" rel="noopener">PyTorch (nnpa device)</a>
+        <a href="https://www.tensorflow.org/" target="_blank" rel="noopener">TensorFlow + IBM zDNN</a>
+        <a href="https://huggingface.co/ibm-granite/granite-4.0-350m" target="_blank" rel="noopener">IBM Granite 4.0 350M</a>
+        <a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2" target="_blank" rel="noopener">MiniLM (all-MiniLM-L6-v2)</a>
+        <a href="https://huggingface.co/docs/transformers" target="_blank" rel="noopener">Hugging Face Transformers</a>
+      </div>
+    </section>
+
+    <p class="note">All data is synthetic. Every match is confirmed by a person, never by the software alone. Live app: http://148.100.76.31:5000 · Code: github.com/AditiAdhikari05/Reunite</p>
+  </main>
+</body>
+</html>
