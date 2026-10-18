@@ -1,0 +1,36 @@
+{
+  "dataset": "shared/data",
+  "records": 100,
+  "valid_json": 1.0,
+  "seconds_per_report": 1.389,
+  "regex": {
+    "hair_color": 0.98,
+    "hair_length": 0.99,
+    "clothing_f1": 0.72,
+    "garment_f1": 0.72,
+    "marks_f1": 0.99,
+    "marks_side_f1": 0.99,
+    "clothing_f1_when_text_mentions_clothing": 0.973,
+    "hair_color_when_text_mentions_hair": 0.975
+  },
+  "granite": {
+    "hair_color": 0.96,
+    "hair_length": 0.93,
+    "clothing_f1": 0.699,
+    "garment_f1": 0.709,
+    "marks_f1": 0.85,
+    "marks_side_f1": 0.85,
+    "clothing_f1_when_text_mentions_clothing": 0.945,
+    "hair_color_when_text_mentions_hair": 0.975
+  },
+  "granite+regex_fallback": {
+    "hair_color": 0.97,
+    "hair_length": 0.94,
+    "clothing_f1": 0.699,
+    "garment_f1": 0.709,
+    "marks_f1": 0.95,
+    "marks_side_f1": 0.95,
+    "clothing_f1_when_text_mentions_clothing": 0.945,
+    "hair_color_when_text_mentions_hair": 0.987
+  }
+}

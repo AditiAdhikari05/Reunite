@@ -1,0 +1,60 @@
+{
+ "measured_at": "2026-10-18 00:32:24",
+ "reps": 5,
+ "granite_reps": 3,
+ "torch": "2.11.0+cpu",
+ "cpu_threads": 3,
+ "nnpa_available": true,
+ "minilm": {
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "texts": 1000,
+  "chip_seconds": [
+   2.07,
+   2.051,
+   2.052,
+   2.157,
+   2.12
+  ],
+  "cpu_seconds": [
+   28.376,
+   28.412,
+   28.57,
+   29.041,
+   28.87
+  ],
+  "chip_median": 2.07,
+  "cpu_median": 28.57,
+  "speedup_median": 13.8,
+  "speedup_worst_pair": 13.466,
+  "speedup_best_pair": 13.922,
+  "output_agreement": {
+   "cosine_similarity_min": 0.99993,
+   "cosine_similarity_mean": 0.99997,
+   "max_abs_difference": 0.0022
+  }
+ },
+ "granite": {
+  "model": "ibm-granite/granite-4.0-350m",
+  "reports_per_run": 5,
+  "max_new_tokens": 60,
+  "chip_seconds": [
+   9.112,
+   8.635,
+   8.575
+  ],
+  "cpu_seconds": [
+   58.858,
+   58.455,
+   58.251
+  ],
+  "chip_median": 8.635,
+  "cpu_median": 58.455,
+  "speedup_median": 6.769,
+  "speedup_worst_pair": 6.459,
+  "speedup_best_pair": 6.793,
+  "identical_answers": "5 of 5",
+  "example_chip_answer": "{\"hair\": \"short black\", \"clothing\": [], \"marks\": []}",
+  "example_cpu_answer": "{\"hair\": \"short black\", \"clothing\": [], \"marks\": []}"
+ },
+ "note": "Real neural networks run through PyTorch on torch.device('nnpa') (the Telum on-chip accelerator) versus the plain CPU, repeated and alternated. The server is shared, so absolute times move; compare the two columns."
+}

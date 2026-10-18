@@ -1,0 +1,70 @@
+{
+ "weights_file": "scorer.npz",
+ "pairs_scored": 2000000,
+ "real_pairs_before_tiling": 240000,
+ "numpy_cpu": {
+  "rows": 2000000,
+  "seconds": 0.0374,
+  "rows_per_sec": 53499799,
+  "all_runs_seconds": [
+   0.0465,
+   0.0374,
+   0.0395,
+   0.0306,
+   0.032
+  ],
+  "mode": "numpy on CPU",
+  "nnpa_devices_env": null,
+  "z_ops_remapped_in_log": 0
+ },
+ "accelerator_off": {
+  "rows": 2000000,
+  "seconds": 0.0906,
+  "rows_per_sec": 22067850,
+  "all_runs_seconds": [
+   0.0981,
+   0.0903,
+   0.0897,
+   0.0932,
+   0.0906
+  ],
+  "mode": "TensorFlow, accelerator OFF (CPU)",
+  "nnpa_devices_env": "0",
+  "z_ops_remapped_in_log": 0
+ },
+ "accelerator_on": {
+  "rows": 2000000,
+  "seconds": 0.1511,
+  "rows_per_sec": 13237172,
+  "all_runs_seconds": [
+   0.1736,
+   0.1475,
+   0.1525,
+   0.1511,
+   0.1466
+  ],
+  "mode": "TensorFlow, IBM Z AI accelerator ON",
+  "nnpa_devices_env": null,
+  "z_ops_remapped_in_log": 0
+ },
+ "layers": [
+  [
+   33,
+   1
+  ]
+ ],
+ "chip_on": {
+  "pairs_per_sec": 13237172,
+  "seconds": 0.1511
+ },
+ "chip_off": {
+  "pairs_per_sec": 22067850,
+  "seconds": 0.0906
+ },
+ "speedup_on_vs_off": 0.6,
+ "parity": {
+  "max_abs_score_difference_on_vs_numpy": 0.006407558917999268,
+  "top1_same_as_numpy_for_share_of_reports": 0.9975
+ },
+ "interpretation": "The accelerator was slower (0.60x) for this tiny model: moving data to the accelerator costs more than the maths saves."
+}

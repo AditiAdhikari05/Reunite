@@ -1,0 +1,35 @@
+{
+  "model": "snapml.BoostingMachineClassifier",
+  "test_countries": [
+    "MA",
+    "PH"
+  ],
+  "reports_with_true_match": 1037,
+  "top1": 0.916,
+  "top5": 0.961,
+  "baseline_name_search_top5": 0.35,
+  "false_alarm_rate": 0.093,
+  "features": [
+    "name_sim",
+    "name_exact_overlap",
+    "first_sim",
+    "last_sim",
+    "name_missing",
+    "age_gap",
+    "age_mid_diff",
+    "age_missing",
+    "gender_match",
+    "cloth_jacc",
+    "cloth_item_jacc",
+    "cloth_missing",
+    "marks_jacc",
+    "marks_extra",
+    "marks_missing",
+    "med_jacc",
+    "lang_jacc",
+    "place_same",
+    "dist_km",
+    "hours_gap"
+  ],
+  "train_seconds": 33
+}

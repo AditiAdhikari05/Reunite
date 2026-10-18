@@ -1,0 +1,298 @@
+{
+ "accuracy_heldout": {
+  "reports_with_a_true_match": 117,
+  "found_people_searched": 595,
+  "top1": 0.7264957264957265,
+  "top3": 0.905982905982906,
+  "top5": 0.9230769230769231,
+  "top10": 0.9829059829059829,
+  "median_rank": 1.0,
+  "chance_top1": 0.0016806722689075631,
+  "review_threshold": 0.89,
+  "flagged_share": 0.5897435897435898,
+  "flagged_top1_precision": 0.9420289855072463,
+  "reports_without_match": 38,
+  "false_alarm_share": 0.05263157894736842,
+  "baselines_from_training": {
+   "keyword_search": {
+    "top1": 0.07377049180327869,
+    "top5": 0.1885245901639344
+   },
+   "hand_weighted_rules": {
+    "top1": 0.5737704918032787,
+    "top5": 0.7540983606557377
+   }
+  },
+  "ablation_from_training": {
+   "without demographics (gender, age, height)": {
+    "top1": 0.5409836065573771,
+    "top5": 0.7295081967213115
+   },
+   "without appearance text (hair, clothing, marks)": {
+    "top1": 0.32786885245901637,
+    "top5": 0.5327868852459017
+   },
+   "without free-text description": {
+    "top1": 0.7213114754098361,
+    "top5": 0.9180327868852459
+   },
+   "without place and time": {
+    "top1": 0.7049180327868853,
+    "top5": 0.9016393442622951
+   }
+  }
+ },
+ "live_flow": {
+  "cases": [
+   {
+    "title": "Demo case 2: male, 49-51, last seen Textile Mill Colony",
+    "missing_id": "M401",
+    "found_id": "F601",
+    "rank_of_true_match": 1,
+    "score": 89,
+    "missing": {
+     "age_min": 49,
+     "age_max": 51,
+     "gender": "male",
+     "hair": "very short dark brown hair",
+     "clothing": "dark hooded sweatshirt, black jeans, yellow flip-flops",
+     "marks": "limp in left leg; nose piercing",
+     "last_seen_place": "Textile Mill Colony",
+     "last_seen_time": "2026-10-16T09:39"
+    },
+    "found": {
+     "age_min": 44,
+     "age_max": 49,
+     "gender": "male",
+     "hair": "very short dark",
+     "clothing": "orange anorak, violet shorts",
+     "marks": "walks with a limp; pierced nose",
+     "found_place": "Canal Street Bridge",
+     "found_time": "2026-10-17T13:27"
+    },
+    "reasons": [
+     {
+      "label": "Gender matches (male)",
+      "matched": true
+     },
+     {
+      "label": "Age ranges overlap (49-51 vs 44-49; found age is an estimate)",
+      "matched": true
+     },
+     {
+      "label": "Height 173 cm vs 178 cm",
+      "matched": true
+     },
+     {
+      "label": "Hair similar (very short dark brown hair vs very short dark)",
+      "matched": true
+     },
+     {
+      "label": "Clothing differs (dark hooded sweatshirt, black jeans, yellow flip-flops vs orange anorak, violet shorts)",
+      "matched": false
+     },
+     {
+      "label": "Distinguishing marks in both (limp in left leg; nose piercing vs walks with a limp; pierced nose)",
+      "matched": true
+     },
+     {
+      "label": "Found 7 km from last seen place, 28 hours later",
+      "matched": true
+     }
+    ],
+    "runner_up_scores": [
+     80,
+     32,
+     16
+    ]
+   },
+   {
+    "title": "Demo case 3: female, 13-14, last seen Textile Mill Colony",
+    "missing_id": "M402",
+    "found_id": "F602",
+    "rank_of_true_match": 1,
+    "score": 99,
+    "missing": {
+     "age_min": 13,
+     "age_max": 14,
+     "gender": "female",
+     "hair": null,
+     "clothing": "navy rain jacket, grey shorts, brown running shoes",
+     "marks": "missing front tooth",
+     "last_seen_place": "Textile Mill Colony",
+     "last_seen_time": "2026-10-15T08:04"
+    },
+    "found": {
+     "age_min": 10,
+     "age_max": 14,
+     "gender": "female",
+     "hair": null,
+     "clothing": "gray shorts, bright orange rain jacket",
+     "marks": "front tooth missing",
+     "found_place": "North Gate Bus Stop",
+     "found_time": "2026-10-15T09:25"
+    },
+    "reasons": [
+     {
+      "label": "Gender matches (female)",
+      "matched": true
+     },
+     {
+      "label": "Age ranges overlap (13-14 vs 10-14; found age is an estimate)",
+      "matched": true
+     },
+     {
+      "label": "Height 164 cm vs 170 cm",
+      "matched": true
+     },
+     {
+      "label": "Clothing overlaps (navy rain jacket, grey shorts, brown running shoes vs gray shorts, bright orange rain jacket)",
+      "matched": true
+     },
+     {
+      "label": "Distinguishing marks in both (missing front tooth vs front tooth missing)",
+      "matched": true
+     },
+     {
+      "label": "Found 11 km from last seen place, 1 hours later",
+      "matched": false
+     }
+    ],
+    "runner_up_scores": [
+     24,
+     21,
+     16
+    ]
+   },
+   {
+    "title": "Demo case 5: other, 58-62, last seen Water Tower Square",
+    "missing_id": "M403",
+    "found_id": "F603",
+    "rank_of_true_match": 1,
+    "score": 99,
+    "missing": {
+     "age_min": 58,
+     "age_max": 62,
+     "gender": "other",
+     "hair": "very short dark brown hair",
+     "clothing": "blue jumper, charcoal shorts, black sneakers",
+     "marks": "scar above left eyebrow; mole on left cheek",
+     "last_seen_place": "Water Tower Square",
+     "last_seen_time": "2026-10-16T08:29"
+    },
+    "found": {
+     "age_min": 52,
+     "age_max": 63,
+     "gender": "other",
+     "hair": null,
+     "clothing": "blue sweater, grey shorts, black sneakers",
+     "marks": "scar on forehead; mole on face",
+     "found_place": "Ferry Bridge",
+     "found_time": "2026-10-17T19:20"
+    },
+    "reasons": [
+     {
+      "label": "Gender matches (other)",
+      "matched": true
+     },
+     {
+      "label": "Age ranges overlap (58-62 vs 52-63; found age is an estimate)",
+      "matched": true
+     },
+     {
+      "label": "Height 166 cm vs 168 cm",
+      "matched": true
+     },
+     {
+      "label": "Clothing overlaps (blue jumper, charcoal shorts, black sneakers vs blue sweater, grey shorts, black sneakers)",
+      "matched": true
+     },
+     {
+      "label": "Distinguishing marks in both (scar above left eyebrow; mole on left cheek vs scar on forehead; mole on face)",
+      "matched": true
+     },
+     {
+      "label": "Found 5 km from last seen place, 35 hours later",
+      "matched": true
+     }
+    ],
+    "runner_up_scores": [
+     15,
+     7,
+     4
+    ]
+   }
+  ],
+  "scorer": {
+   "big_batches_use": "numpy",
+   "layers": [
+    [
+     33,
+     1
+    ]
+   ],
+   "startup_timing_ms_per_8192_pairs": {
+    "numpy": 0.09,
+    "tensorflow": 0.62
+   },
+   "tensorflow_available": true,
+   "tensorflow_error": null
+  },
+  "benchmark_live": {
+   "accuracy": {
+    "cases": 122,
+    "engine": {
+     "top1": 0.73,
+     "top5": 0.926
+    },
+    "keyword": {
+     "top1": 0.074,
+     "top5": 0.189
+    }
+   },
+   "speed": {
+    "full_rescan_seconds": 0.406,
+    "pairs": 235025,
+    "scoring_seconds": 0.002
+   },
+   "chip": {
+    "deployed_scorer": {
+     "accelerator_off_pairs_per_sec": 22067850,
+     "accelerator_on_pairs_per_sec": 13237172,
+     "layers": [
+      [
+       33,
+       1
+      ]
+     ],
+     "plain_cpu_numpy_pairs_per_sec": 53499799,
+     "speedup_on_vs_off": 0.6,
+     "verdict": "The accelerator was slower (0.60x) for this tiny model: moving data to the accelerator costs more than the maths saves."
+    },
+    "note": "Stress test, measured on this server: Same model and data, accelerator on vs off. 4-layer neural network, 8,192 pairs per batch, 20 repeats, 3 virtual CPUs. This is a generic neural network used to show when the accelerator helps, NOT our matcher. Our deployed matcher, measured by bench_scorer.py on 2,000,000 pairs: The accelerator was slower (0.60x) for this tiny model: moving data to the accelerator costs more than the maths saves.",
+    "off": {
+     "pairs_per_sec": 41918,
+     "seconds": 3.91
+    },
+    "on": {
+     "pairs_per_sec": 237224,
+     "seconds": 0.69
+    },
+    "speedup_on_vs_off": 5.66,
+    "what_was_tested": "a generic 4-layer neural network (not the matcher)"
+   },
+   "live_rescan": {
+    "at": "00:29:27",
+    "feature_seconds": 0.404,
+    "found_people": 595,
+    "pairs": 235025,
+    "reports": 395,
+    "scoring_mode": "numpy on CPU",
+    "scoring_pairs_per_sec": 94712365,
+    "scoring_seconds": 0.002
+   }
+  }
+ },
+ "checks_passed": 31,
+ "checks_failed": 0
+}

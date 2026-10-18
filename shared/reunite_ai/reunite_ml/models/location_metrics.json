@@ -1,0 +1,36 @@
+{
+  "model": "snapml.BoostingMachineClassifier",
+  "test_countries": [
+    "MA",
+    "PH"
+  ],
+  "cases": 867,
+  "model_top1": 0.269,
+  "model_top3": 0.64,
+  "nearest_site_top1": 0.258,
+  "nearest_site_top3": 0.612,
+  "random_top3": 0.303,
+  "features": [
+    "dist_km",
+    "dist_rank",
+    "dist_minus_nearest",
+    "log_dist",
+    "nearest_hospital",
+    "nearest_shelter",
+    "is_hospital",
+    "medical_flag",
+    "medical_x_hospital",
+    "slow_mobility",
+    "slow_x_dist",
+    "downstream",
+    "near_home",
+    "home_known",
+    "age",
+    "hazard_flood",
+    "hazard_flash flood",
+    "hazard_hurricane",
+    "hazard_earthquake",
+    "hazard_typhoon"
+  ],
+  "train_seconds": 2
+}

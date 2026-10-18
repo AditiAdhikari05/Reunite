@@ -1,0 +1,32 @@
+{
+  "model": "snapml.BoostingMachineClassifier",
+  "test_countries": [
+    "MA",
+    "PH"
+  ],
+  "cases": 773,
+  "base_rate_bad_outcome": 0.259,
+  "auc": 0.598,
+  "auc_simple_rule": 0.548,
+  "share_of_bad_outcomes_in_top_20pct": 0.225,
+  "features": [
+    "age",
+    "age_under5",
+    "age_70plus",
+    "gender_f",
+    "hours_missing",
+    "slow_mobility",
+    "med_diabetes",
+    "med_dementia",
+    "med_heart condition",
+    "med_asthma",
+    "med_pregnant",
+    "med_epilepsy",
+    "hazard_flood",
+    "hazard_flash flood",
+    "hazard_hurricane",
+    "hazard_earthquake",
+    "hazard_typhoon"
+  ],
+  "train_seconds": 2
+}

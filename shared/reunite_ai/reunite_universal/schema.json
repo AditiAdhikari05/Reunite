@@ -1,0 +1,98 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "found"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name_latin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "age_min": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "age_max": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "gender": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "F",
+        "M",
+        null
+      ]
+    },
+    "clothing": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "marks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "medical": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "place": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location_now": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "report_type",
+    "name",
+    "name_latin",
+    "age_min",
+    "age_max",
+    "gender",
+    "clothing",
+    "marks",
+    "medical",
+    "languages",
+    "place",
+    "location_now"
+  ]
+}

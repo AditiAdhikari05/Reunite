@@ -1,0 +1,10 @@
+flask
+pandas
+numpy
+scikit-learn
+joblib
+# optional: only needed if you set STATE_KEY (encrypts saved reports)
+# cryptography
+# optional: only for REUNITE_GRANITE=1 and chip_models_bench.py (already in the Jupyter image)
+# torch
+# transformers

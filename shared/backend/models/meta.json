@@ -1,0 +1,163 @@
+{
+ "trained_at": "2026-10-18 00:20:29",
+ "model": "logreg",
+ "layers": [
+  [
+   33,
+   1
+  ]
+ ],
+ "n_features": 33,
+ "features": [
+  "g_same",
+  "g_conflict",
+  "g_unk",
+  "age_overlap",
+  "age_gap_norm",
+  "age_mid_diff_norm",
+  "age_child_adult_conflict",
+  "h_known",
+  "h_diff_norm",
+  "hair_color_known",
+  "hair_color_sim",
+  "hair_len_known",
+  "hair_len_sim",
+  "hair_char_sim",
+  "cloth_known",
+  "cloth_family",
+  "cloth_sub",
+  "cloth_color",
+  "cloth_item",
+  "cloth_char_sim",
+  "marks_known",
+  "marks_one_blank",
+  "marks_type",
+  "marks_typeloc",
+  "marks_side_match",
+  "marks_side_conflict",
+  "marks_char_sim",
+  "desc_word_sim",
+  "desc_char_sim",
+  "place_known",
+  "km_norm",
+  "gap_negative",
+  "speed_norm"
+ ],
+ "review_threshold": 0.89,
+ "cross_validation_dev": {
+  "logreg": {
+   "queries": 178,
+   "top1": 0.7303370786516854,
+   "top5": 0.9325842696629213,
+   "top10": 0.9719101123595506,
+   "mrr": 0.8172553799687482,
+   "median_rank": 1.0
+  },
+  "mlp_small": {
+   "queries": 178,
+   "top1": 0.6067415730337079,
+   "top5": 0.7640449438202247,
+   "top10": 0.8651685393258427,
+   "mrr": 0.6897535887908096,
+   "median_rank": 1.0
+  },
+  "mlp_wide": {
+   "queries": 178,
+   "top1": 0.651685393258427,
+   "top5": 0.848314606741573,
+   "top10": 0.8932584269662921,
+   "mrr": 0.7357756847088782,
+   "median_rank": 1.0
+  }
+ },
+ "test_results": {
+  "keyword baseline (TF-IDF on description)": {
+   "queries": 122,
+   "top1": 0.07377049180327869,
+   "top5": 0.1885245901639344,
+   "top10": 0.26229508196721313,
+   "mrr": 0.14097559023560605,
+   "median_rank": 49.0
+  },
+  "hand-weighted rules": {
+   "queries": 122,
+   "top1": 0.5737704918032787,
+   "top5": 0.7540983606557377,
+   "top10": 0.8278688524590164,
+   "mrr": 0.6566286335434041,
+   "median_rank": 1.0
+  },
+  "learned scorer (logreg) - DEPLOYED": {
+   "queries": 122,
+   "top1": 0.7295081967213115,
+   "top5": 0.9262295081967213,
+   "top10": 0.9836065573770492,
+   "mrr": 0.8252146760343482,
+   "median_rank": 1.0
+  },
+  "learned scorer (mlp_small) - not deployed": {
+   "queries": 122,
+   "top1": 0.6557377049180327,
+   "top5": 0.8688524590163934,
+   "top10": 0.9180327868852459,
+   "mrr": 0.7400714123955789,
+   "median_rank": 1.0
+  },
+  "learned scorer (mlp_wide) - not deployed": {
+   "queries": 122,
+   "top1": 0.6475409836065574,
+   "top5": 0.8524590163934426,
+   "top10": 0.9344262295081968,
+   "mrr": 0.746283523895877,
+   "median_rank": 1.0
+  }
+ },
+ "review_policy_test": {
+  "threshold": 0.89,
+  "flagged_share_of_reports_with_match": 0.5983606557377049,
+  "top1_precision_when_flagged": 0.92,
+  "reports_without_match_flagged": 0.05263157894736842
+ },
+ "ablation_test": {
+  "without demographics (gender, age, height)": {
+   "queries": 122,
+   "top1": 0.5409836065573771,
+   "top5": 0.7295081967213115,
+   "top10": 0.8442622950819673,
+   "mrr": 0.62808413590933,
+   "median_rank": 1.0
+  },
+  "without appearance text (hair, clothing, marks)": {
+   "queries": 122,
+   "top1": 0.32786885245901637,
+   "top5": 0.5327868852459017,
+   "top10": 0.6639344262295082,
+   "mrr": 0.43908838449711785,
+   "median_rank": 5.0
+  },
+  "without free-text description": {
+   "queries": 122,
+   "top1": 0.7213114754098361,
+   "top5": 0.9180327868852459,
+   "top10": 0.9836065573770492,
+   "mrr": 0.8207227426489722,
+   "median_rank": 1.0
+  },
+  "without place and time": {
+   "queries": 122,
+   "top1": 0.7049180327868853,
+   "top5": 0.9016393442622951,
+   "top10": 0.9426229508196722,
+   "mrr": 0.7968617106936778,
+   "median_rank": 1.0
+  }
+ },
+ "dev_reports": 240,
+ "test_reports": 160,
+ "found_pool": 600,
+ "notes": [
+  "All data is synthetic. Numbers are on held-out 'test' reports the model never trained on.",
+  "In the generator, found_time is always 1-72 h after last_seen_time; real data would not be that tidy. The model only sees 'found before last seen' and the speed needed, not the raw time gap.",
+  "Scores are ranking scores, not probabilities of being the same person."
+ ]
+}

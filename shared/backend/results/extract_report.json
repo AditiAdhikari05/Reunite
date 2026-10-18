@@ -1,0 +1,71 @@
+{
+ "extractor": "regex only",
+ "reports_in_test": 122,
+ "found_pool": 600,
+ "quality_missing": {
+  "hair_colour_same": 0.986,
+  "hair_length_same": 0.983,
+  "clothing_f1": 0.453,
+  "marks_type_f1": 0.97,
+  "clothing_f1_when_text_mentions_clothing": 0.996,
+  "share_of_descriptions_mentioning_clothing": 0.455,
+  "reports_scored": {
+   "hair": 295,
+   "clothing": 400,
+   "marks": 259
+  }
+ },
+ "quality_found": {
+  "hair_colour_same": 0.986,
+  "hair_length_same": 0.988,
+  "clothing_f1": 0.99,
+  "marks_type_f1": 0.984,
+  "clothing_f1_when_text_mentions_clothing": 0.993,
+  "share_of_descriptions_mentioning_clothing": 0.997,
+  "reports_scored": {
+   "hair": 489,
+   "clothing": 600,
+   "marks": 317
+  }
+ },
+ "scenario_missing_reports_text_only": {
+  "full_boxes": {
+   "top1": 0.73,
+   "top5": 0.926,
+   "top10": 0.984,
+   "median_rank": 1.0
+  },
+  "boxes_blank": {
+   "top1": 0.049,
+   "top5": 0.189,
+   "top10": 0.344,
+   "median_rank": 19.0
+  },
+  "boxes_blank_plus_extraction": {
+   "top1": 0.607,
+   "top5": 0.893,
+   "top10": 0.959,
+   "median_rank": 1.0
+  }
+ },
+ "scenario_both_sides_text_only": {
+  "full_boxes": {
+   "top1": 0.73,
+   "top5": 0.926,
+   "top10": 0.984,
+   "median_rank": 1.0
+  },
+  "boxes_blank": {
+   "top1": 0.074,
+   "top5": 0.41,
+   "top10": 0.648,
+   "median_rank": 7.5
+  },
+  "boxes_blank_plus_extraction": {
+   "top1": 0.607,
+   "top5": 0.885,
+   "top10": 0.959,
+   "median_rank": 1.0
+  }
+ }
+}

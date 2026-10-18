@@ -1,0 +1,13 @@
+{
+  "text_similarity_only_all_reports": {
+    "reports": 300,
+    "top1": 0.013,
+    "top5": 0.08
+  },
+  "text_similarity_only_sparse_reports": {
+    "reports": 55,
+    "top1": 0.0,
+    "top5": 0.018
+  },
+  "note": "Sparse = at least 2 of hair, marks, height blank. Add the similarity as one more feature in the matcher and keep it only if test recall improves."
+}

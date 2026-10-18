@@ -1,0 +1,11 @@
+{
+  "chip_on": {
+    "pairs_per_sec": 237224,
+    "seconds": 0.69
+  },
+  "chip_off": {
+    "pairs_per_sec": 41918,
+    "seconds": 3.91
+  },
+  "note": "Same model and data, accelerator on vs off. 4-layer neural network, 8,192 pairs per batch, 20 repeats, 3 virtual CPUs."
+}

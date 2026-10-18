@@ -1,0 +1,20 @@
+{
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "texts": 1000,
+  "torch": "2.11.0+cpu",
+  "runs": {
+    "nnpa": {
+      "works": true,
+      "check": "matmul on nnpa ok, checksum 231.13",
+      "seconds_total": 2.991,
+      "ms_per_text": 2.99
+    },
+    "cpu": {
+      "works": true,
+      "check": "matmul on cpu ok, checksum 131.60",
+      "seconds_total": 28.228,
+      "ms_per_text": 28.23
+    }
+  },
+  "speedup_first_vs_second": 9.44
+}

@@ -1,0 +1,157 @@
+[
+ {
+  "missing_id": "M263",
+  "found_id": "F12",
+  "true_rank_in_full_pool": 1,
+  "missing": {
+   "age_min": 57,
+   "age_max": 58,
+   "gender": "female",
+   "height_cm": 158.0,
+   "hair": "shoulder length dark brown hair",
+   "clothing": "olive hooded sweatshirt, gray skirt, dark wellingtons",
+   "marks": null,
+   "last_seen_place": "Textile Mill Colony",
+   "last_seen_time": "2026-10-15T00:51",
+   "description": "My mother has not come home. Age 57-58, last seen at Textile Mill Colony on Thursday 12 AM. With shoulder length dark brown hair. Any information please call.",
+   "contact": "(555) 719-2767"
+  },
+  "found": {
+   "age_min": 52,
+   "age_max": 59,
+   "gender": "female",
+   "height_cm": 163.0,
+   "hair": "shoulder length dark",
+   "clothing": "green hooded sweatshirt, mustard skirt",
+   "marks": null,
+   "found_place": "Lakeside Park",
+   "found_time": "2026-10-17T08:58",
+   "current_location": "Hillcrest School Shelter",
+   "description": "Adult female located near Lakeside Park by rescue team, est. 52-59 yrs. Wearing green hooded sweatshirt, mustard skirt. Height apprx. 163 cm. Hair: shouldr length dark."
+  }
+ },
+ {
+  "missing_id": "M284",
+  "found_id": "F316",
+  "true_rank_in_full_pool": 1,
+  "missing": {
+   "age_min": 49,
+   "age_max": 51,
+   "gender": "male",
+   "height_cm": 173.0,
+   "hair": "very short dark brown hair",
+   "clothing": "dark hooded sweatshirt, black jeans, yellow flip-flops",
+   "marks": "limp in left leg; nose piercing",
+   "last_seen_place": "Textile Mill Colony",
+   "last_seen_time": "2026-10-16T09:39",
+   "description": "Please help. My brother (around 50) went missing around Textile Mill Colony. Last seen in dark hooded sweatshirt, black jeans, yellow flip-flops. With very short dark brown hair. You can recognise them by limp in left leg; nose piercing.",
+   "contact": "(555) 448-8906"
+  },
+  "found": {
+   "age_min": 44,
+   "age_max": 49,
+   "gender": "male",
+   "height_cm": 178.0,
+   "hair": "very short dark",
+   "clothing": "orange anorak, violet shorts",
+   "marks": "walks with a limp; pierced nose",
+   "found_place": "Canal Street Bridge",
+   "found_time": "2026-10-17T13:27",
+   "current_location": "Community Hall Shelter",
+   "description": "Adult male, approx. 44-49 years, found at Canal Street Bridge, wearing orange anorak, violet shorts. Height approx. 178 cm. Hair: very short dark. Walks with a limp; pierced nose. Speaks little, appears in shock."
+  }
+ },
+ {
+  "missing_id": "M358",
+  "found_id": "F85",
+  "true_rank_in_full_pool": 1,
+  "missing": {
+   "age_min": 13,
+   "age_max": 14,
+   "gender": "female",
+   "height_cm": 164.0,
+   "hair": null,
+   "clothing": "navy rain jacket, grey shorts, brown running shoes",
+   "marks": "missing front tooth",
+   "last_seen_place": "Textile Mill Colony",
+   "last_seen_time": "2026-10-15T08:04",
+   "description": "Please help. My daughter (about 14) went missing around Textile Mill Colony. Last seen in navy rain jacket, grey shorts, brown running shoes. Distinguishing marks: missing front tooth. Any information please call.",
+   "contact": "(555) 357-4882"
+  },
+  "found": {
+   "age_min": 10,
+   "age_max": 14,
+   "gender": "female",
+   "height_cm": 170.0,
+   "hair": null,
+   "clothing": "gray shorts, bright orange rain jacket",
+   "marks": "front tooth missing",
+   "found_place": "North Gate Bus Stop",
+   "found_time": "2026-10-15T09:25",
+   "current_location": "Community Hall Shelter",
+   "description": "Female child located near North Gate Bus Stop by rescue team, est. 10-14 yrs. Wearing gray shorts, bright orange rain jacket. Height approx. 170 cm. Front tooth missing."
+  }
+ },
+ {
+  "missing_id": "M244",
+  "found_id": "F261",
+  "true_rank_in_full_pool": 1,
+  "missing": {
+   "age_min": 38,
+   "age_max": 39,
+   "gender": "female",
+   "height_cm": 175.0,
+   "hair": null,
+   "clothing": "pink shirt, navy slacks",
+   "marks": "burn scar on right hand",
+   "last_seen_place": "East Embankment",
+   "last_seen_time": "2026-10-16T01:11",
+   "description": "My wife has not come home. Age 38-39, last seen at East Embankment on Friday 1 AM. Look for burn scar on right hand.",
+   "contact": "(555) 438-1965"
+  },
+  "found": {
+   "age_min": 30,
+   "age_max": 40,
+   "gender": "female",
+   "height_cm": 170.0,
+   "hair": "short jet black",
+   "clothing": "blue slacks, brown cap",
+   "marks": null,
+   "found_place": "Iron Bridge",
+   "found_time": "2026-10-16T20:05",
+   "current_location": "Field Hospital (Stadium Grounds)",
+   "description": "Unidentified adult female, estimated age 30-40. Brought in from Iron Bridge. Clothing: blue slacks, brown cap. Height approx. 170 cm. Hair: short jet black."
+  }
+ },
+ {
+  "missing_id": "M348",
+  "found_id": "F568",
+  "true_rank_in_full_pool": 1,
+  "missing": {
+   "age_min": 58,
+   "age_max": 62,
+   "gender": "other",
+   "height_cm": 166.0,
+   "hair": "very short dark brown hair",
+   "clothing": "blue jumper, charcoal shorts, black sneakers",
+   "marks": "scar above left eyebrow; mole on left cheek",
+   "last_seen_place": "Water Tower Square",
+   "last_seen_time": "2026-10-16T08:29",
+   "description": "Please help. My cousin (58-62) went missing around Water Tower Square. Last seen in blue jumper, charcoal shorts, black sneakers. With very short dark brown hair. Look for scar above left eyebrow; mole on left cheek. We are very worried.",
+   "contact": "(555) 670-7723"
+  },
+  "found": {
+   "age_min": 52,
+   "age_max": 63,
+   "gender": "other",
+   "height_cm": 168.0,
+   "hair": null,
+   "clothing": "blue sweater, grey shorts, black sneakers",
+   "marks": "scar on forehead; mole on face",
+   "found_place": "Ferry Bridge",
+   "found_time": "2026-10-17T19:20",
+   "current_location": "St. Brennan's Hospital",
+   "description": "Adult person located near Ferry Bridge by rescue team, est. 52-63 yrs. Wearing blue sweater, grey shorts, black sneakers. Height approx. 168 cm. Scar on forehead; mole on face."
+  }
+ }
+]

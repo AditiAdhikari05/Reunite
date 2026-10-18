@@ -1,0 +1,924 @@
+{
+  "system_prompt": "You read reports about missing or found people after a disaster. The report can be in any language or script. Return only JSON with exactly these keys: report_type, name, name_latin, age_min, age_max, gender, clothing, marks, medical, languages, place, location_now. Copy the name exactly as written into name, and give its standard Latin spelling in name_latin. Write clothing, marks, medical and languages in plain English. Use null or [] when the report does not say something. Never guess.",
+  "vocab": {
+    "clothing_colors": [
+      "red",
+      "blue",
+      "green",
+      "yellow",
+      "black",
+      "white",
+      "brown",
+      "grey",
+      "pink"
+    ],
+    "clothing_items": [
+      "shirt",
+      "trousers",
+      "dress",
+      "scarf",
+      "jacket",
+      "cap"
+    ],
+    "marks": [
+      "scar on left arm",
+      "birthmark on neck",
+      "missing front tooth",
+      "wears glasses",
+      "walks with a limp",
+      "mole on cheek",
+      "tattoo on wrist",
+      "uses a walking stick"
+    ],
+    "medical": [
+      "diabetes",
+      "dementia",
+      "heart condition",
+      "asthma",
+      "pregnant",
+      "epilepsy"
+    ]
+  },
+  "scenarios": {
+    "PK": {
+      "scenario": "Monsoon floods, Sindh (Pakistan)",
+      "hazard": "flood",
+      "split": "train",
+      "start": "2022-08-25T06:00:00",
+      "places": {
+        "Johi": [
+          26.69,
+          67.61
+        ],
+        "Dadu": [
+          26.73,
+          67.78
+        ],
+        "Mehar": [
+          27.18,
+          67.82
+        ],
+        "Sehwan": [
+          26.43,
+          67.86
+        ],
+        "Khairpur Nathan Shah": [
+          27.09,
+          67.73
+        ],
+        "Radhan": [
+          27.2,
+          67.95
+        ]
+      },
+      "sites": [
+        {
+          "name": "Dadu Civil Hospital",
+          "lat": 26.73,
+          "lon": 67.78,
+          "kind": "hospital"
+        },
+        {
+          "name": "Sehwan Relief Camp",
+          "lat": 26.42,
+          "lon": 67.87,
+          "kind": "shelter"
+        },
+        {
+          "name": "Hyderabad Relief Camp",
+          "lat": 25.39,
+          "lon": 68.33,
+          "kind": "shelter"
+        },
+        {
+          "name": "Sukkur Shelter Camp",
+          "lat": 27.7,
+          "lon": 68.86,
+          "kind": "shelter"
+        },
+        {
+          "name": "Government School Johi Shelter",
+          "lat": 26.7,
+          "lon": 67.62,
+          "kind": "shelter"
+        },
+        {
+          "name": "Johi Basic Health Unit",
+          "lat": 26.7,
+          "lon": 67.62,
+          "kind": "hospital"
+        },
+        {
+          "name": "Government School Dadu Shelter",
+          "lat": 26.74,
+          "lon": 67.79,
+          "kind": "shelter"
+        },
+        {
+          "name": "Government School Mehar Shelter",
+          "lat": 27.19,
+          "lon": 67.83,
+          "kind": "shelter"
+        },
+        {
+          "name": "Mehar Basic Health Unit",
+          "lat": 27.19,
+          "lon": 67.83,
+          "kind": "hospital"
+        },
+        {
+          "name": "Government School Khairpur Nathan Shah Shelter",
+          "lat": 27.1,
+          "lon": 67.74,
+          "kind": "shelter"
+        },
+        {
+          "name": "Khairpur Nathan Shah Basic Health Unit",
+          "lat": 27.1,
+          "lon": 67.74,
+          "kind": "hospital"
+        },
+        {
+          "name": "Government School Radhan Shelter",
+          "lat": 27.21,
+          "lon": 67.96,
+          "kind": "shelter"
+        }
+      ]
+    },
+    "NP": {
+      "scenario": "Glacier flash flood, Rasuwa and Nuwakot (Nepal)",
+      "hazard": "flash flood",
+      "split": "train",
+      "start": "2026-08-26T08:30:00",
+      "places": {
+        "Syabrubesi": [
+          28.16,
+          85.34
+        ],
+        "Timure": [
+          28.23,
+          85.36
+        ],
+        "Dhunche": [
+          28.11,
+          85.3
+        ],
+        "Betrawati": [
+          27.97,
+          85.18
+        ],
+        "Bidur": [
+          27.92,
+          85.15
+        ],
+        "Devighat": [
+          27.88,
+          85.13
+        ]
+      },
+      "sites": [
+        {
+          "name": "Dhunche District Hospital",
+          "lat": 28.11,
+          "lon": 85.3,
+          "kind": "hospital"
+        },
+        {
+          "name": "Trishuli Hospital",
+          "lat": 27.9,
+          "lon": 85.15,
+          "kind": "hospital"
+        },
+        {
+          "name": "Betrawati Relief Camp",
+          "lat": 27.97,
+          "lon": 85.18,
+          "kind": "shelter"
+        },
+        {
+          "name": "Bir Hospital Kathmandu",
+          "lat": 27.7,
+          "lon": 85.31,
+          "kind": "hospital"
+        },
+        {
+          "name": "Syabrubesi Community Shelter",
+          "lat": 28.17,
+          "lon": 85.35,
+          "kind": "shelter"
+        },
+        {
+          "name": "Syabrubesi Health Post",
+          "lat": 28.17,
+          "lon": 85.35,
+          "kind": "hospital"
+        },
+        {
+          "name": "Timure Community Shelter",
+          "lat": 28.24,
+          "lon": 85.37,
+          "kind": "shelter"
+        },
+        {
+          "name": "Dhunche Community Shelter",
+          "lat": 28.12,
+          "lon": 85.31,
+          "kind": "shelter"
+        },
+        {
+          "name": "Bidur Community Shelter",
+          "lat": 27.93,
+          "lon": 85.16,
+          "kind": "shelter"
+        },
+        {
+          "name": "Bidur Health Post",
+          "lat": 27.93,
+          "lon": 85.16,
+          "kind": "hospital"
+        },
+        {
+          "name": "Devighat Community Shelter",
+          "lat": 27.89,
+          "lon": 85.14,
+          "kind": "shelter"
+        }
+      ]
+    },
+    "MX": {
+      "scenario": "Hurricane landfall, Guerrero (Mexico)",
+      "hazard": "hurricane",
+      "split": "train",
+      "start": "2023-10-25T01:00:00",
+      "places": {
+        "Acapulco": [
+          16.85,
+          -99.88
+        ],
+        "Coyuca de Benitez": [
+          17.01,
+          -100.09
+        ],
+        "Chilpancingo": [
+          17.55,
+          -99.5
+        ],
+        "Tecpan": [
+          17.22,
+          -100.63
+        ],
+        "Pie de la Cuesta": [
+          16.88,
+          -99.98
+        ]
+      },
+      "sites": [
+        {
+          "name": "Hospital General de Acapulco",
+          "lat": 16.86,
+          "lon": -99.88,
+          "kind": "hospital"
+        },
+        {
+          "name": "Albergue Unidad Deportiva Acapulco",
+          "lat": 16.87,
+          "lon": -99.87,
+          "kind": "shelter"
+        },
+        {
+          "name": "Albergue Chilpancingo Centro",
+          "lat": 17.55,
+          "lon": -99.5,
+          "kind": "shelter"
+        },
+        {
+          "name": "Cruz Roja Coyuca",
+          "lat": 17.01,
+          "lon": -100.09,
+          "kind": "shelter"
+        },
+        {
+          "name": "Albergue Escuela Coyuca de Benitez",
+          "lat": 17.02,
+          "lon": -100.08,
+          "kind": "shelter"
+        },
+        {
+          "name": "Centro de Salud Chilpancingo",
+          "lat": 17.56,
+          "lon": -99.49,
+          "kind": "hospital"
+        },
+        {
+          "name": "Albergue Escuela Tecpan",
+          "lat": 17.23,
+          "lon": -100.62,
+          "kind": "shelter"
+        },
+        {
+          "name": "Albergue Escuela Pie de la Cuesta",
+          "lat": 16.89,
+          "lon": -99.97,
+          "kind": "shelter"
+        },
+        {
+          "name": "Centro de Salud Pie de la Cuesta",
+          "lat": 16.89,
+          "lon": -99.97,
+          "kind": "hospital"
+        }
+      ]
+    },
+    "BR": {
+      "scenario": "River floods, Rio Grande do Sul (Brazil)",
+      "hazard": "flood",
+      "split": "train",
+      "start": "2024-05-03T07:00:00",
+      "places": {
+        "Porto Alegre": [
+          -30.03,
+          -51.23
+        ],
+        "Canoas": [
+          -29.92,
+          -51.18
+        ],
+        "Eldorado do Sul": [
+          -30.08,
+          -51.62
+        ],
+        "Sao Leopoldo": [
+          -29.76,
+          -51.15
+        ],
+        "Guaiba": [
+          -30.11,
+          -51.33
+        ]
+      },
+      "sites": [
+        {
+          "name": "Hospital de Pronto Socorro Porto Alegre",
+          "lat": -30.04,
+          "lon": -51.21,
+          "kind": "hospital"
+        },
+        {
+          "name": "Abrigo Ginasio Tesourinha",
+          "lat": -30.04,
+          "lon": -51.22,
+          "kind": "shelter"
+        },
+        {
+          "name": "Abrigo ULBRA Canoas",
+          "lat": -29.92,
+          "lon": -51.17,
+          "kind": "shelter"
+        },
+        {
+          "name": "Abrigo Sao Leopoldo Centro",
+          "lat": -29.76,
+          "lon": -51.15,
+          "kind": "shelter"
+        },
+        {
+          "name": "Abrigo Escola Porto Alegre",
+          "lat": -30.02,
+          "lon": -51.22,
+          "kind": "shelter"
+        },
+        {
+          "name": "Abrigo Escola Eldorado do Sul",
+          "lat": -30.07,
+          "lon": -51.61,
+          "kind": "shelter"
+        },
+        {
+          "name": "Posto de Saude Eldorado do Sul",
+          "lat": -30.07,
+          "lon": -51.61,
+          "kind": "hospital"
+        },
+        {
+          "name": "Abrigo Escola Guaiba",
+          "lat": -30.1,
+          "lon": -51.32,
+          "kind": "shelter"
+        },
+        {
+          "name": "Posto de Saude Guaiba",
+          "lat": -30.1,
+          "lon": -51.32,
+          "kind": "hospital"
+        }
+      ]
+    },
+    "IT": {
+      "scenario": "Night earthquake, central Apennines (Italy)",
+      "hazard": "earthquake",
+      "split": "train",
+      "start": "2016-08-24T03:36:00",
+      "places": {
+        "Amatrice": [
+          42.63,
+          13.29
+        ],
+        "Accumoli": [
+          42.69,
+          13.25
+        ],
+        "Norcia": [
+          42.79,
+          13.09
+        ],
+        "Arquata del Tronto": [
+          42.77,
+          13.3
+        ]
+      },
+      "sites": [
+        {
+          "name": "Ospedale di Rieti",
+          "lat": 42.4,
+          "lon": 12.86,
+          "kind": "hospital"
+        },
+        {
+          "name": "Tendopoli Amatrice",
+          "lat": 42.63,
+          "lon": 13.29,
+          "kind": "shelter"
+        },
+        {
+          "name": "Palestra comunale Norcia",
+          "lat": 42.79,
+          "lon": 13.09,
+          "kind": "shelter"
+        },
+        {
+          "name": "Ospedale di Ascoli Piceno",
+          "lat": 42.85,
+          "lon": 13.58,
+          "kind": "hospital"
+        },
+        {
+          "name": "Posto medico avanzato Amatrice",
+          "lat": 42.64,
+          "lon": 13.3,
+          "kind": "hospital"
+        },
+        {
+          "name": "Area di accoglienza Accumoli",
+          "lat": 42.7,
+          "lon": 13.26,
+          "kind": "shelter"
+        },
+        {
+          "name": "Posto medico avanzato Norcia",
+          "lat": 42.8,
+          "lon": 13.1,
+          "kind": "hospital"
+        },
+        {
+          "name": "Area di accoglienza Arquata del Tronto",
+          "lat": 42.78,
+          "lon": 13.31,
+          "kind": "shelter"
+        }
+      ]
+    },
+    "HT": {
+      "scenario": "Earthquake, southern peninsula (Haiti)",
+      "hazard": "earthquake",
+      "split": "train",
+      "start": "2021-08-14T08:29:00",
+      "places": {
+        "Les Cayes": [
+          18.2,
+          -73.75
+        ],
+        "Jeremie": [
+          18.65,
+          -74.12
+        ],
+        "Port-Salut": [
+          18.08,
+          -73.92
+        ],
+        "Camp-Perrin": [
+          18.32,
+          -73.86
+        ],
+        "Maniche": [
+          18.34,
+          -73.78
+        ]
+      },
+      "sites": [
+        {
+          "name": "Hopital Immaculee Conception Les Cayes",
+          "lat": 18.2,
+          "lon": -73.75,
+          "kind": "hospital"
+        },
+        {
+          "name": "Camp Parc Larco Les Cayes",
+          "lat": 18.19,
+          "lon": -73.76,
+          "kind": "shelter"
+        },
+        {
+          "name": "Hopital Saint-Antoine Jeremie",
+          "lat": 18.65,
+          "lon": -74.11,
+          "kind": "hospital"
+        },
+        {
+          "name": "Abri Ecole Nationale Camp-Perrin",
+          "lat": 18.32,
+          "lon": -73.86,
+          "kind": "shelter"
+        },
+        {
+          "name": "Abri Lekol Jeremie",
+          "lat": 18.66,
+          "lon": -74.11,
+          "kind": "shelter"
+        },
+        {
+          "name": "Abri Lekol Port-Salut",
+          "lat": 18.09,
+          "lon": -73.91,
+          "kind": "shelter"
+        },
+        {
+          "name": "Dispansè Port-Salut",
+          "lat": 18.09,
+          "lon": -73.91,
+          "kind": "hospital"
+        },
+        {
+          "name": "Abri Lekol Maniche",
+          "lat": 18.35,
+          "lon": -73.77,
+          "kind": "shelter"
+        },
+        {
+          "name": "Dispansè Maniche",
+          "lat": 18.35,
+          "lon": -73.77,
+          "kind": "hospital"
+        }
+      ]
+    },
+    "JP": {
+      "scenario": "New Year earthquake, Noto Peninsula (Japan)",
+      "hazard": "earthquake",
+      "split": "train",
+      "start": "2024-01-01T16:10:00",
+      "places": {
+        "Wajima": [
+          37.39,
+          136.9
+        ],
+        "Suzu": [
+          37.44,
+          137.26
+        ],
+        "Anamizu": [
+          37.23,
+          136.91
+        ],
+        "Noto": [
+          37.31,
+          137.15
+        ],
+        "Nanao": [
+          37.04,
+          136.97
+        ]
+      },
+      "sites": [
+        {
+          "name": "Wajima Middle School Shelter",
+          "lat": 37.39,
+          "lon": 136.9,
+          "kind": "shelter"
+        },
+        {
+          "name": "Suzu City Hall Shelter",
+          "lat": 37.44,
+          "lon": 137.26,
+          "kind": "shelter"
+        },
+        {
+          "name": "Kanazawa University Hospital",
+          "lat": 36.56,
+          "lon": 136.66,
+          "kind": "hospital"
+        },
+        {
+          "name": "Nanao Gymnasium Shelter",
+          "lat": 37.04,
+          "lon": 136.97,
+          "kind": "shelter"
+        },
+        {
+          "name": "Wajima Clinic",
+          "lat": 37.4,
+          "lon": 136.91,
+          "kind": "hospital"
+        },
+        {
+          "name": "Anamizu Community Center Shelter",
+          "lat": 37.24,
+          "lon": 136.92,
+          "kind": "shelter"
+        },
+        {
+          "name": "Anamizu Clinic",
+          "lat": 37.24,
+          "lon": 136.92,
+          "kind": "hospital"
+        },
+        {
+          "name": "Noto Community Center Shelter",
+          "lat": 37.32,
+          "lon": 137.16,
+          "kind": "shelter"
+        },
+        {
+          "name": "Nanao Clinic",
+          "lat": 37.05,
+          "lon": 136.98,
+          "kind": "hospital"
+        }
+      ]
+    },
+    "TR": {
+      "scenario": "Earthquake, Hatay and Kahramanmaras (Turkiye)",
+      "hazard": "earthquake",
+      "split": "train",
+      "start": "2023-02-06T04:17:00",
+      "places": {
+        "Antakya": [
+          36.2,
+          36.16
+        ],
+        "Kahramanmaras": [
+          37.58,
+          36.93
+        ],
+        "Iskenderun": [
+          36.59,
+          36.17
+        ],
+        "Adiyaman": [
+          37.76,
+          38.28
+        ],
+        "Defne": [
+          36.19,
+          36.14
+        ]
+      },
+      "sites": [
+        {
+          "name": "Adana Sehir Hastanesi",
+          "lat": 37.05,
+          "lon": 35.3,
+          "kind": "hospital"
+        },
+        {
+          "name": "Antakya Cadirkent",
+          "lat": 36.21,
+          "lon": 36.17,
+          "kind": "shelter"
+        },
+        {
+          "name": "Iskenderun Devlet Hastanesi",
+          "lat": 36.59,
+          "lon": 36.17,
+          "kind": "hospital"
+        },
+        {
+          "name": "Kahramanmaras Cadirkent",
+          "lat": 37.58,
+          "lon": 36.92,
+          "kind": "shelter"
+        },
+        {
+          "name": "Antakya Sahra Hastanesi",
+          "lat": 36.21,
+          "lon": 36.17,
+          "kind": "hospital"
+        },
+        {
+          "name": "Iskenderun Cadirkent",
+          "lat": 36.6,
+          "lon": 36.18,
+          "kind": "shelter"
+        },
+        {
+          "name": "Adiyaman Cadirkent",
+          "lat": 37.77,
+          "lon": 38.29,
+          "kind": "shelter"
+        },
+        {
+          "name": "Defne Cadirkent",
+          "lat": 36.2,
+          "lon": 36.15,
+          "kind": "shelter"
+        },
+        {
+          "name": "Defne Sahra Hastanesi",
+          "lat": 36.2,
+          "lon": 36.15,
+          "kind": "hospital"
+        }
+      ]
+    },
+    "MA": {
+      "scenario": "Night earthquake, Al Haouz (Morocco)",
+      "hazard": "earthquake",
+      "split": "test",
+      "start": "2023-09-08T23:11:00",
+      "places": {
+        "Amizmiz": [
+          31.22,
+          -8.24
+        ],
+        "Talat N'Yaaqoub": [
+          30.99,
+          -8.18
+        ],
+        "Moulay Brahim": [
+          31.29,
+          -7.97
+        ],
+        "Asni": [
+          31.25,
+          -7.98
+        ],
+        "Ouirgane": [
+          31.17,
+          -8.08
+        ]
+      },
+      "sites": [
+        {
+          "name": "Marrakech Field Hospital",
+          "lat": 31.63,
+          "lon": -8.01,
+          "kind": "hospital"
+        },
+        {
+          "name": "Amizmiz Tent Camp",
+          "lat": 31.22,
+          "lon": -8.24,
+          "kind": "shelter"
+        },
+        {
+          "name": "Asni Health Center",
+          "lat": 31.25,
+          "lon": -7.98,
+          "kind": "hospital"
+        },
+        {
+          "name": "Ibn Tofail Hospital Marrakech",
+          "lat": 31.64,
+          "lon": -8.0,
+          "kind": "hospital"
+        },
+        {
+          "name": "Amizmiz Health Center",
+          "lat": 31.23,
+          "lon": -8.23,
+          "kind": "hospital"
+        },
+        {
+          "name": "Talat N'Yaaqoub Tent Camp",
+          "lat": 31.0,
+          "lon": -8.17,
+          "kind": "shelter"
+        },
+        {
+          "name": "Moulay Brahim Tent Camp",
+          "lat": 31.3,
+          "lon": -7.96,
+          "kind": "shelter"
+        },
+        {
+          "name": "Moulay Brahim Health Center",
+          "lat": 31.3,
+          "lon": -7.96,
+          "kind": "hospital"
+        },
+        {
+          "name": "Asni Tent Camp",
+          "lat": 31.26,
+          "lon": -7.97,
+          "kind": "shelter"
+        },
+        {
+          "name": "Ouirgane Tent Camp",
+          "lat": 31.18,
+          "lon": -8.07,
+          "kind": "shelter"
+        },
+        {
+          "name": "Ouirgane Health Center",
+          "lat": 31.18,
+          "lon": -8.07,
+          "kind": "hospital"
+        }
+      ]
+    },
+    "PH": {
+      "scenario": "Super typhoon and storm surge, Leyte (Philippines)",
+      "hazard": "typhoon",
+      "split": "test",
+      "start": "2013-11-08T04:40:00",
+      "places": {
+        "Tacloban": [
+          11.24,
+          125.0
+        ],
+        "Palo": [
+          11.16,
+          124.99
+        ],
+        "Tanauan": [
+          11.11,
+          125.02
+        ],
+        "Basey": [
+          11.28,
+          125.07
+        ],
+        "Ormoc": [
+          11.01,
+          124.61
+        ]
+      },
+      "sites": [
+        {
+          "name": "Eastern Visayas Medical Center",
+          "lat": 11.23,
+          "lon": 125.0,
+          "kind": "hospital"
+        },
+        {
+          "name": "Tacloban Astrodome Evacuation Center",
+          "lat": 11.24,
+          "lon": 125.01,
+          "kind": "shelter"
+        },
+        {
+          "name": "Palo Evacuation Center",
+          "lat": 11.16,
+          "lon": 124.99,
+          "kind": "shelter"
+        },
+        {
+          "name": "Ormoc District Hospital",
+          "lat": 11.01,
+          "lon": 124.61,
+          "kind": "hospital"
+        },
+        {
+          "name": "Tacloban Rural Health Unit",
+          "lat": 11.25,
+          "lon": 125.01,
+          "kind": "hospital"
+        },
+        {
+          "name": "Tanauan Evacuation Center",
+          "lat": 11.12,
+          "lon": 125.03,
+          "kind": "shelter"
+        },
+        {
+          "name": "Tanauan Rural Health Unit",
+          "lat": 11.12,
+          "lon": 125.03,
+          "kind": "hospital"
+        },
+        {
+          "name": "Basey Evacuation Center",
+          "lat": 11.29,
+          "lon": 125.08,
+          "kind": "shelter"
+        },
+        {
+          "name": "Ormoc Evacuation Center",
+          "lat": 11.02,
+          "lon": 124.62,
+          "kind": "shelter"
+        }
+      ]
+    }
+  }
+}
