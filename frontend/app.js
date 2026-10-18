@@ -590,6 +590,10 @@ async function mockApi(method, path, body) {
     isStaff();
     return Object.entries(state.found).map(([id, f]) => Object.assign({ id }, f, {
       source: f.source || "authority", summary: summarize(f), claimed_by: mockClaimedBy(state, id),
+      top_matches: Object.entries(state.missing)
+        .map(([mid, m]) => ({ missing_id: mid, score: (state.canned[mid + "|" + id] || mockScore(m, f)).score,
+          decision: mockDecision(state, mid, id) }))
+        .filter(x => x.score >= 40).sort((a, b) => b.score - a.score).slice(0, 3),
     }));
   }
 

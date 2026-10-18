@@ -464,3 +464,51 @@ details summary { cursor: pointer; font-weight: 600; color: var(--primary); }
   .status-key { grid-template-columns: 1fr; gap: .25rem; }
   .status-key dd { margin-bottom: .75rem; }
 }
+
+/* ---------- Found people board ---------- */
+.chip-row { display: flex; flex-wrap: wrap; gap: .5rem; margin: .25rem 0 .75rem; }
+.chip {
+  font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer;
+  padding: .35rem .85rem; border-radius: 999px;
+  border: 2px solid var(--border); background: var(--surface); color: var(--text);
+}
+.chip:hover { border-color: var(--primary); }
+.chip.active { background: var(--primary); border-color: var(--primary); color: var(--primary-text); }
+
+.found-grid {
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+.found-card {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1rem; box-shadow: 0 1px 2px rgba(20, 24, 31, .06);
+}
+.found-card.reunited { border: 2px solid var(--ok); }
+.found-card-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.found-card-head h3 { margin: 0; font-size: 1.15rem; }
+.found-summary { margin: .35rem 0 .5rem; font-weight: 600; }
+.found-card h4 { margin: .75rem 0 .4rem; font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+
+.source-tag { font-size: .78rem; font-weight: 700; padding: .1rem .55rem; border-radius: 999px; white-space: nowrap; }
+.source-tag.public { background: var(--warn-bg); color: #5c4100; border: 1px solid var(--warn-border); }
+.source-tag.staff { background: #e8eef6; color: var(--primary); border: 1px solid #9db4cf; }
+
+.reunited-note { margin: .5rem 0 0; padding: .4rem .65rem; border-radius: 8px; background: var(--ok-bg); color: var(--ok); font-weight: 700; }
+.reunited-note .link { font-weight: 700; color: inherit; }
+
+.match-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+.match-row { display: grid; grid-template-columns: 3.2rem 1fr 2rem 4.6rem; align-items: center; gap: .5rem; }
+.match-id { font-weight: 700; text-align: left; }
+.score-bar.mini { height: .6rem; margin: 0; }
+.score-fill.strong { background: var(--ok); }
+.score-fill.possible { background: #b07800; }
+.score-fill.weak { background: #8a94a3; }
+.match-score { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.band { font-size: .75rem; font-weight: 700; text-align: center; padding: .05rem .3rem; border-radius: 6px; }
+.band.strong { background: var(--ok-bg); color: var(--ok); }
+.band.possible { background: var(--warn-bg); color: #5c4100; }
+.band.weak { background: #eef0f3; color: var(--muted); }
+.found-card dl { display: grid; grid-template-columns: auto 1fr; gap: .1rem .75rem; margin: 0; font-size: .95rem; }
+.found-card dt { color: var(--muted); }
+.found-card dd { margin: 0; }

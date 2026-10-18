@@ -117,7 +117,7 @@ Each candidate: `{found_id, score (0–100), reasons: [{label, matched}], found:
 | POST | `/api/auth/logout` | logged in | Ends the session |
 | GET | `/api/auth/me` | logged in | `{user: {email, name, role}}` or 401 |
 | POST | `/api/auth/authority/request` | anyone | `{name, email, agency, position, staff_id, reason, password}` creates a pending request |
-| GET | `/api/found` | authority | All found people: `[{id, summary, found_place, found_time, current_location, source: "authority" \| "public", claimed_by: "M12" \| null}]`. Feeds the "Found people" table |
+| GET | `/api/found` | authority | All found people: `[{id, summary, found_place, found_time, current_location, source: "authority" \| "public", claimed_by: "M12" \| null, top_matches: [{missing_id, score, decision}]}]`. `top_matches` is the 3 best-scoring missing reports. Feeds the "Found people" board |
 | GET / POST | `/api/family/members` | family | List or add family members |
 | DELETE | `/api/family/members/<id>` | family | Remove a member |
 | GET | `/api/family/reports` | family | `[{id, status, member_name, last_seen_place, last_seen_time}]` |

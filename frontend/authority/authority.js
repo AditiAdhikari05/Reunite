@@ -92,8 +92,21 @@ PAGES["authority-dashboard"] = async function () {
     return r.flagged === true || normalStatus(r.status) === "possible_match";
   }
 
+  const REPORT_FILTERS = [
+    ["open", "Open", r => normalStatus(r.status) !== "reunited"],
+    ["reunited", "Reunited", r => normalStatus(r.status) === "reunited"],
+  ];
+  let reportFilter = "open";
+
   function renderReports() {
-    $("#reports-body").replaceChildren(...reports.map(r => el("tr", {
+    $("#report-filters").replaceChildren(...REPORT_FILTERS.map(([key, label, test]) => el("button", {
+      type: "button", class: "chip" + (key === reportFilter ? " active" : ""),
+      "aria-pressed": key === reportFilter ? "true" : "false",
+      text: label + " (" + reports.filter(test).length + ")",
+      onclick: () => { reportFilter = key; renderReports(); },
+    })));
+    const shown = reports.filter(REPORT_FILTERS.find(x => x[0] === reportFilter)[2]);
+    $("#reports-body").replaceChildren(...shown.map(r => el("tr", {
       class: [isFlagged(r) ? "flagged" : "", r.id === selected ? "selected" : ""].join(" ").trim() || null,
     }, [
       el("td", null, [el("button", {
@@ -107,46 +120,121 @@ PAGES["authority-dashboard"] = async function () {
       ]),
       el("td", null, [statusPill(r.status)]),
     ])));
-    show($("#reports-empty"), reports.length === 0);
+    show($("#reports-empty"), shown.length === 0);
     const n = reports.filter(isFlagged).length;
     $("#flagged-count").textContent = n ? n + " report" + (n === 1 ? "" : "s") + " flagged by the matching engine, shown first." : "";
   }
 
-  /* Found people (newest first) */
+  /* Found people board: one card per found person, newest first, with the
+     missing reports they most resemble. */
+  const FOUND_FILTERS = [
+    ["open", "Open", f => !f.claimed_by],
+    ["public", "Public reports", f => !f.claimed_by && f.source === "public"],
+    ["staff", "Staff reports", f => !f.claimed_by && f.source !== "public"],
+    ["likely", "Likely match", f => !f.claimed_by && topScore(f) >= 60],
+    ["reunited", "Reunited", f => !!f.claimed_by],
+  ];
+  let found = [];
+  let foundFilter = "open";
+
+  // Suggestions staff have not rejected.
+  function liveMatches(f) {
+    return (f.top_matches || []).filter(m => !String(m.decision || "").startsWith("reject"));
+  }
+
+  function topScore(f) {
+    return Math.max(0, ...liveMatches(f).map(m => m.score));
+  }
+
+  function matchBand(score) {
+    if (score >= 80) return ["strong", "Strong"];
+    if (score >= 60) return ["possible", "Possible"];
+    return ["weak", "Weak"];
+  }
+
+  function reviewReport(id) {
+    openReview(id);
+    $("#review").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function matchRow(f, m) {
+    const score = Math.max(0, Math.min(100, Math.round(m.score)));
+    const [band, bandLabel] = matchBand(score);
+    return el("li", { class: "match-row" }, [
+      el("button", {
+        type: "button", class: "link match-id", text: m.missing_id,
+        "aria-label": "Review missing report " + m.missing_id + ", score " + score,
+        onclick: () => reviewReport(m.missing_id),
+      }),
+      el("div", {
+        class: "score-bar mini", role: "meter", "aria-valuemin": "0", "aria-valuemax": "100",
+        "aria-valuenow": String(score), "aria-label": "Match score with " + m.missing_id,
+      }, [el("div", { class: "score-fill " + band, style: "width:" + score + "%" })]),
+      el("span", { class: "match-score", text: String(score) }),
+      el("span", { class: "band " + band, text: bandLabel }),
+    ]);
+  }
+
+  function foundCard(f) {
+    const matches = liveMatches(f).slice(0, 3);
+    const isPublic = f.source === "public";
+    return el("article", { class: "found-card" + (f.claimed_by ? " reunited" : ""), "aria-labelledby": "fc-" + f.id }, [
+      el("div", { class: "found-card-head" }, [
+        el("h3", { id: "fc-" + f.id, text: f.id }),
+        el("span", { class: "source-tag " + (isPublic ? "public" : "staff"),
+          text: isPublic ? "Public · unverified" : "Staff record" }),
+      ]),
+      el("p", { class: "found-summary", text: f.summary || summarize(f) }),
+      recordList([
+        ["Found", [f.found_place, formatTime(f.found_time)].filter(Boolean).join(", ")],
+        ["Now at", f.current_location],
+      ]),
+      f.claimed_by
+        ? el("p", { class: "reunited-note" }, ["✓ Reunited with ",
+            el("button", { type: "button", class: "link", text: f.claimed_by, onclick: () => reviewReport(f.claimed_by) })])
+        : null,
+      f.claimed_by ? null : el("h4", { text: "Closest missing reports" }),
+      f.claimed_by ? null : matches.length
+        ? el("ul", { class: "match-list" }, matches.map(m => matchRow(f, m)))
+        : el("p", { class: "hint", text: "No likely matches yet. The engine checks again as reports arrive." }),
+    ]);
+  }
+
+  function renderFound() {
+    const pass = FOUND_FILTERS.find(x => x[0] === foundFilter)[2];
+    const shown = found.filter(pass);
+    $("#found-filters").replaceChildren(...FOUND_FILTERS.map(([key, label, test]) => el("button", {
+      type: "button", class: "chip" + (key === foundFilter ? " active" : ""),
+      "aria-pressed": key === foundFilter ? "true" : "false",
+      text: label + " (" + found.filter(test).length + ")",
+      onclick: () => { foundFilter = key; renderFound(); },
+    })));
+    $("#found-grid").replaceChildren(...shown.map(foundCard));
+    show($("#found-empty"), found.length > 0 && shown.length === 0);
+    const unverified = found.filter(f => f.source === "public").length;
+    $("#found-count").textContent = found.length
+      ? found.length + " found " + (found.length === 1 ? "person" : "people") +
+        (unverified ? ", " + unverified + " from the public and not yet verified." : ".")
+      : "No found people recorded yet.";
+  }
+
   async function loadFound() {
     const box = $("#found-list-message");
     clearMessage(box);
     let list;
     try { list = await api("GET", "/api/found"); } catch (e) {
       if (e.status === 401) { goToLogin("login.html"); return; }
-      show($("#found-table"), false);
-      show($("#found-empty"), false);
+      found = [];
+      $("#found-filters").replaceChildren();
+      $("#found-grid").replaceChildren();
       $("#found-count").textContent = "";
       box.replaceChildren(e.status === 404 || e.status === 405
-        ? "The found-people list is not available on this server yet. Found people still appear under each report's possible matches."
+        ? "The found-people board is not available on this server yet. Found people still appear under each report's possible matches."
         : e.message);
       return;
     }
-    show($("#found-table"), list.length > 0);
-    show($("#found-empty"), list.length === 0);
-    const unverified = list.filter(f => f.source === "public").length;
-    $("#found-count").textContent = list.length
-      ? list.length + " found " + (list.length === 1 ? "person" : "people") +
-        (unverified ? ", " + unverified + " reported by the public and not yet verified." : ".")
-      : "";
-    $("#found-body").replaceChildren(...list.slice().reverse().map(f => el("tr", null, [
-      el("td", { text: f.id }),
-      el("td", null, [
-        f.source === "public" ? el("span", { class: "flag-badge", text: "Public report, unverified" }) : null,
-        el("span", { text: f.summary || summarize(f) }),
-      ]),
-      el("td", { text: [f.found_place, formatTime(f.found_time)].filter(Boolean).join(", ") }),
-      el("td", { text: f.current_location || "" }),
-      el("td", null, [f.claimed_by
-        ? el("button", { class: "link", text: "Reunited with " + f.claimed_by,
-            "aria-label": "Review report " + f.claimed_by, onclick: () => openReview(f.claimed_by) })
-        : el("span", { text: "Not matched yet" })]),
-    ])));
+    found = list.slice().reverse();
+    renderFound();
   }
 
   /* Admin: access requests and authority accounts */
@@ -267,10 +355,22 @@ PAGES["authority-dashboard"] = async function () {
     } catch (e) { list.replaceChildren(); return; }
 
     const report = data.missing || reports.find(r => r.id === id) || {};
-    const cands = (data.candidates || []).slice(0, 10);
-    list.replaceChildren(...(cands.length
+    const all = data.candidates || [];
+    const confirmed = all.filter(c => decisionOf(c) === "confirmed");
+    const open = all.filter(c => !decisionOf(c) && !c.claimed_by);
+    const rejected = all.filter(c => decisionOf(c) === "rejected").length;
+    const taken = all.filter(c => !decisionOf(c) && c.claimed_by).length;
+    const cands = confirmed.length ? confirmed : open.slice(0, 10);
+    $("#review-heading").textContent = (confirmed.length ? "Confirmed match for report " : "Possible matches for report ") + id;
+    const hidden = [];
+    if (rejected) hidden.push(rejected + " rejected");
+    if (taken) hidden.push(taken + " already reunited with another report");
+    const note = confirmed.length
+      ? "Other suggestions are hidden while this match is confirmed. Undo it to see them again."
+      : hidden.length ? "Hidden: " + hidden.join(", ") + "." : "";
+    list.replaceChildren(...[note ? el("p", { class: "hint", text: note }) : null].concat(cands.length
       ? cands.map((c, i) => candidateCard(id, report, c, i + 1))
-      : [el("p", { text: "No suggested matches yet. Suggestions appear as found people are added." })]));
+      : [el("p", { text: "No suggested matches left to review. New suggestions appear as found people are added." })]));
     if (!keepFocus) $("#review-heading").focus();
   }
 
@@ -320,8 +420,8 @@ PAGES["authority-dashboard"] = async function () {
           await Promise.all([loadReports(), loadFound()]);
           await openReview(mid, true);
         } catch (e) { return; }
-        const done = { confirm: "Match with " + c.found_id + " confirmed. The family will see “Reunited”.",
-          reject: "Suggestion " + c.found_id + " rejected.", undo: "Decision on " + c.found_id + " undone." };
+        const done = { confirm: "Match with " + c.found_id + " confirmed. The family will see “Reunited”, and report " + mid + " has moved to the Reunited list. You can still undo it here.",
+          reject: "Suggestion " + c.found_id + " rejected and removed from this list.", undo: "Decision on " + c.found_id + " undone." };
         showMessage($("#review-message"), "success", done[action]);
       });
     }
