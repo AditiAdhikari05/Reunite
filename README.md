@@ -1,162 +1,90 @@
 # Reunite
 
-A prototype for the IBM Z Datathon that helps reunite families after a disaster. Formerly called DisasterBridge-AI.
+Privacy-first family reunification after disasters, built on IBM LinuxONE for the IBM Z Datathon 2026 (Track 2: AI Secured – Innovation Without Exposure).
 
-Repository: <https://github.com/AditiAdhikari05/Reunite>
+Families report people who are missing. Shelters, hospitals, rescue staff and members of the public record people they have found. An AI matching engine ranks likely matches with a score and the reasons behind it, and a trained person confirms every match before a family is contacted. Families only ever see a status: **Searching**, **Possible match under review** or **Reunited**.
 
-- **Families** report people who are missing.
-- **Authorities** (rescue, shelter, hospital and police staff) record people they have found.
-- **Anyone** can report a person they found, without an account.
-- A **matching engine** ranks which missing and found records may be the same person, with a score and the reasons for it.
-- **A human must confirm every match.** Families only ever see a status, never match details or scores.
+All data in this repository is synthetic. No real people are involved.
 
-The app runs on **IBM LinuxONE** (Linux on IBM Z, `s390x`). The Flask API and the matching engine run on the server, so sensitive data stays there.
+## Features
 
+- **Family portal:** sign up, save family members in advance, report someone missing and follow each report's status.
+- **Public found-person report:** anyone can report a person they found, without an account.
+- **Authority portal:** admin-approved staff accounts, a report queue with flagged likely matches, ranked suggestions with reasons, and Confirm / Reject / Undo.
+- **Matching engine:** scores every missing report against every found person using 33 clues (age, gender, height, hair, clothing, marks, place and time).
+- **Free-text reading:** IBM Granite extracts hair, clothing and marks from one-line reports, and a grounding check keeps only details that appear in the original text.
+- **Privacy by design:** all data, models and AI stay on one LinuxONE server. No outside AI service is called.
 
+## Architecture
 
-## Live server
+See [architecture.html](architecture.html) for the architecture diagram and solution flowchart.
 
-The app runs on IBM LinuxONE at <http://148.100.76.31:5000/>.
+```
+Browser (families · public · staff)
+        │  HTTP / JSON
+        ▼
+IBM LinuxONE (s390x) — Docker container
+  ├── Web front end (HTML, CSS, JavaScript)
+  ├── Flask API (session login, role checks, hashed passwords)
+  ├── Records (reports, found people, decisions)
+  ├── Matching engine (scikit-learn logistic regression, TensorFlow + IBM zDNN)
+  └── Telum on-chip AI accelerator (NNPA): IBM Granite 350M, MiniLM embeddings via PyTorch
+```
 
-| Portal | Email | Password |
-|---|---|---|
-| Authority (admin) | `you@example.com` | `a-long-password` |
+## Results
 
-Families create their own account from the family portal's sign-up page.
+Measured on the LinuxONE server with held-out synthetic data:
 
-## Run the frontend locally
+| Measure | Result |
+|---|---|
+| Right person in the top 5 suggestions | 92.6% (keyword search: 18.9%) |
+| Right person ranked first | 73.0% (keyword search: 7.4%) |
+| Full re-scan of all report pairs | 235,025 pairs in 0.4 s |
+| MiniLM embeddings on the AI chip vs CPU | 9.4× faster, identical output |
+| Granite 350M on the AI chip vs CPU | 6.9× faster, identical output |
+| Clothing read correctly from unfamiliar wording | 75% (rules alone: 14%) |
 
-You only need Python 3 and Git. There is no Node, no npm and no build step.
+## Repository structure
+
+```
+shared/
+  backend/        Flask API, matching engine, training and test scripts, trained models
+  frontend/       Web pages: welcome, family portal, authority portal, public report, status, platform
+  data/           Main synthetic dataset (missing, found, places, truth)
+  data_hard/      Harder dataset with new vocabulary and typos
+  reunite_ai/     Multilingual matching, location and risk models
+  docs/           AI chip benchmark results
+tasks/            Text embeddings and Granite extraction experiments on the AI chip
+architecture.html Architecture diagram and solution flowchart
+*.ipynb           IBM AI on LinuxONE lab notebooks and experiment notebooks
+```
+
+## Running it
+
+The backend serves the web pages and the API from the same address, on port 5000. Python 3.12 is recommended.
 
 ```bash
-git clone https://github.com/AditiAdhikari05/Reunite.git
-cd Reunite/frontend
-python3 -m http.server 5500
+cd shared/backend
+pip install -r requirements.txt
+python3 train.py --data ../data --out models     # retrain on this machine (about 30 s)
+python3 selftest.py                              # automated API checks; should end with "0 failed"
+python3 create_admin.py <admin-email> '<a-long-password>'
+nohup python3 app.py > app.log 2>&1 &
 ```
 
-First set `USE_MOCK = true` in `frontend/app.js` (see "Mock mode vs live backend" below), because there is no backend on your laptop. Then open <http://localhost:5500/>. Use the local server instead of double-clicking the HTML files, because pages opened as `file://` cannot share demo data.
+Then open `http://<server-address>:5000/`. Check that it is running at `http://<server-address>:5000/api/health`. Stop it with `python3 stop_app.py`.
 
-### Demo logins (mock mode only)
+To try the web pages on their own with built-in sample data, set `const USE_MOCK = true;` on the first line of `shared/frontend/app.js`, then run `python3 -m http.server 5500` inside `shared/frontend` and open <http://localhost:5500/>.
 
-These accounts do not exist on the live server.
+Add `?demo=1` to a page address to show a demo helper that fills in ready-made cases.
 
-| Portal | Email | Password | 
-|---|---|---|
-| Family | `family@reunite.demo` | `demo-family-2026` |
-| Authority (admin) | `admin@reunite.demo` | `demo-admin-2026` | 
-| Authority (officer) | `officer@reunite.demo` | `demo-officer-2026` | 
+## Privacy and safety
 
+- Families never see scores, found-person details or other people's reports.
+- Staff accounts must be approved by an administrator. Passwords are stored only as salted hashes.
+- Scores are suggestions. The software never confirms a match by itself.
+- Saved reports and accounts (`shared/backend/state/`) are created at run time and are not part of this repository.
 
+## Open-source tools
 
-## Live demo script (for the judges)
-
-Add `?demo=1` to a page address to show the hidden **Demo helper** panel. It lists only the cases marked `good_for_live_demo` from `GET /api/demo-cases`.
-
-1. Family portal: open `family/index.html?demo=1`, click **Fill missing report**, then **Send report**. Note the number, for example `M13`.
-2. Open `status.html?id=M13`. It shows **Searching**.
-3. Authority portal: open `authority/index.html?demo=1`, click **Fill found record** for the same case, then **Save found person**.
-4. The status page flips to **Possible match under review**. It refreshes itself every 15 seconds. The report is flagged ⚑ in the authority table.
-5. Open the report, check the reasons, and **Confirm**. The status becomes **Reunited**. **Undo** reverses it.
-
-In mock mode, **Reset demo data** (authority dashboard) starts again from scratch.
-
-## Folder structure
-
-```
-frontend/
-  index.html               Welcome page: family / authority / "Report a person found"
-  status.html              Public status check by report number (no login)
-  report-found.html        Public found-person report (no login)
-  platform.html            "How it works": LinuxONE explanation and benchmark results
-  app.js                   Shared code: USE_MOCK switch, API helper, mock backend, public pages
-  style.css                Shared styles
-  family/                  Family portal: login, signup, dashboard (family.js)
-  authority/               Authority portal: login (email, password), request access, dashboard (authority.js)
-  authority.html           Redirects to authority/login.html
-```
-
-## Mock mode vs live backend
-
-The first line of `frontend/app.js` is:
-
-```js
-const USE_MOCK = false;
-```
-
-It is `false` because the live backend is up: the Flask app on LinuxONE serves this folder and the API at <http://148.100.76.31:5000/>. Set it to `true` only to run the frontend on its own with fake data. Set it back to `false` before uploading to the server. Send Swastik any response that does not match the contract below, with the request and response pasted in.
-
-## API contract
-
-All bodies are JSON. Errors return `{"error": "message"}` with a 4xx status. Dates are ISO strings like `"2026-10-17T14:30"`. All URLs are relative (`fetch("/api/...")`).
-
-Logged-in routes use a **session cookie**. Authority routes need an `authority` or `admin` account (401 if not logged in, 403 for other roles). There is no PIN.
-
-### Core routes (from Swastik's brief)
-
-| Method | Route | Who | Request / response |
-|---|---|---|---|
-| GET | `/api/places` | anyone | List of place names (strings, or objects with `name`). Feeds the place autocomplete |
-| POST | `/api/missing` | family | Missing report (below). Returns `{id, status}` |
-| GET | `/api/status/<id>` | anyone | `{id, status, authority_contact}`. `status` is `searching`, `possible_match` or `reunited`. **No match details** |
-| POST | `/api/found` | authority | Found record. Returns `{id}` |
-| GET | `/api/missing` | authority | All reports with `id`, `status`, `summary` and **`flagged`** (true if the engine flagged it) |
-| GET | `/api/matches/<id>` | authority | `{missing_id, missing?, candidates: [...]}`. The frontend shows the top 10 |
-| POST | `/api/matches/<id>/decision` | authority | `{found_id, decision: "confirm" \| "reject" \| "undo"}`. **409** if that found person is already claimed by another report |
-| GET | `/api/demo-cases` | anyone | `[{id, title, good_for_live_demo, missing: {...}, found: {...}}]` |
-| GET | `/api/benchmark` | anyone | See below |
-
-Each candidate: `{found_id, score (0–100), reasons: [{label, matched}], found: {...}, decision: "confirmed" | "rejected" | null, claimed_by: "M12" | null}`.
-
-### Routes added by the frontend (Swastik to build)
-
-| Method | Route | Who | Purpose |
-|---|---|---|---|
-| POST | `/api/public/found` | anyone | Found-person report from the public. Adds `reporter_name`, `reporter_phone`. Stored with `source: "public"` |
-| POST | `/api/auth/signup` | anyone | `{name, email, phone, password}` creates a **family** account and logs in |
-| POST | `/api/auth/login` | anyone | `{email, password, role: "family" \| "authority"}`. A pending authority gets 403 |
-| POST | `/api/auth/logout` | logged in | Ends the session |
-| GET | `/api/auth/me` | logged in | `{user: {email, name, role}}` or 401 |
-| POST | `/api/auth/authority/request` | anyone | `{name, email, agency, position, staff_id, reason, password}` creates a pending request |
-| GET | `/api/found` | authority | All found people: `[{id, summary, found_place, found_time, current_location, source: "authority" \| "public", claimed_by: "M12" \| null, top_matches: [{missing_id, score, decision}]}]`. `top_matches` is the 3 best-scoring missing reports. Feeds the "Found people" board |
-| GET / POST | `/api/family/members` | family | List or add family members |
-| DELETE | `/api/family/members/<id>` | family | Remove a member |
-| GET | `/api/family/reports` | family | `[{id, status, member_name, last_seen_place, last_seen_time}]` |
-| GET | `/api/admin/requests` | admin | Pending access requests |
-| POST | `/api/admin/requests/<email>/approve` or `/reject` | admin | Approve or decline |
-| GET / POST | `/api/admin/authorities` | admin | List, or add `{name, email, password}` |
-| DELETE | `/api/admin/authorities/<email>` | admin | Remove access |
-
-### Missing report body
-
-```json
-{
-  "member_id": "P1",
-  "age_min": 28, "age_max": 34, "gender": "female", "height_cm": 165,
-  "hair": "black, shoulder length", "clothing": "red jacket, jeans",
-  "marks": "scar above left eyebrow",
-  "last_seen_place": "Riverside Market", "last_seen_time": "2026-10-16T18:00",
-  "description": "Last seen heading towards the bridge.",
-  "contact": "555-0100"
-}
-```
-
-Found records use `found_place`, `found_time` and `current_location` instead of the "last seen" fields, and have no `contact`.
-
-### Benchmark format the page expects
-
-```json
-{
-  "note": "free text, shown as-is",
-  "accuracy": { "cases": 200, "engine": {"top1": 0.78, "top5": 0.94}, "keyword": {"top1": 0.41, "top5": 0.66} },
-  "speed": { "pairs": 40000, "full_rescan_seconds": 1.9 },
-  "chip": { "on": {"seconds": 1.9}, "off": {"seconds": 2.0}, "note": "free text, shown as-is" }
-}
-```
-
-Fractions (0–1) and percentages both work. Any section that is missing shows "not available yet". The page also shows the **full raw output**, so nothing is hidden or reworded, including chip results that didn't help.
-
-## Not done yet
-
-- Real backend, including the account routes above
-- Real matching engine and measured benchmark numbers
-- Password reset and email notifications
+[Python](https://www.python.org/) · [Flask](https://flask.palletsprojects.com/) · [scikit-learn](https://scikit-learn.org/) · [NumPy](https://numpy.org/) · [pandas](https://pandas.pydata.org/) · [PyTorch](https://pytorch.org/) · [TensorFlow](https://www.tensorflow.org/) · [Hugging Face Transformers](https://huggingface.co/docs/transformers) · [IBM Granite 4.0 350M](https://huggingface.co/ibm-granite/granite-4.0-350m) · [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
