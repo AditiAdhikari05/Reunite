@@ -14,6 +14,16 @@ The app runs on **IBM LinuxONE** (Linux on IBM Z, `s390x`). The Flask API and th
 
 
 
+## Live server
+
+The app runs on IBM LinuxONE at <http://148.100.76.31:5000/>.
+
+| Portal | Email | Password |
+|---|---|---|
+| Authority (admin) | `you@example.com` | `a-long-password` |
+
+Families create their own account from the family portal's sign-up page.
+
 ## Run the frontend locally
 
 You only need Python 3 and Git. There is no Node, no npm and no build step.
@@ -107,6 +117,7 @@ Each candidate: `{found_id, score (0–100), reasons: [{label, matched}], found:
 | POST | `/api/auth/logout` | logged in | Ends the session |
 | GET | `/api/auth/me` | logged in | `{user: {email, name, role}}` or 401 |
 | POST | `/api/auth/authority/request` | anyone | `{name, email, agency, position, staff_id, reason, password}` creates a pending request |
+| GET | `/api/found` | authority | All found people: `[{id, summary, found_place, found_time, current_location, source: "authority" \| "public", claimed_by: "M12" \| null}]`. Feeds the "Found people" table |
 | GET / POST | `/api/family/members` | family | List or add family members |
 | DELETE | `/api/family/members/<id>` | family | Remove a member |
 | GET | `/api/family/reports` | family | `[{id, status, member_name, last_seen_place, last_seen_time}]` |

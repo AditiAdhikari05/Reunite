@@ -112,6 +112,43 @@ PAGES["authority-dashboard"] = async function () {
     $("#flagged-count").textContent = n ? n + " report" + (n === 1 ? "" : "s") + " flagged by the matching engine, shown first." : "";
   }
 
+  /* Found people (newest first) */
+  async function loadFound() {
+    const box = $("#found-list-message");
+    clearMessage(box);
+    let list;
+    try { list = await api("GET", "/api/found"); } catch (e) {
+      if (e.status === 401) { goToLogin("login.html"); return; }
+      show($("#found-table"), false);
+      show($("#found-empty"), false);
+      $("#found-count").textContent = "";
+      box.replaceChildren(e.status === 404 || e.status === 405
+        ? "The found-people list is not available on this server yet. Found people still appear under each report's possible matches."
+        : e.message);
+      return;
+    }
+    show($("#found-table"), list.length > 0);
+    show($("#found-empty"), list.length === 0);
+    const unverified = list.filter(f => f.source === "public").length;
+    $("#found-count").textContent = list.length
+      ? list.length + " found " + (list.length === 1 ? "person" : "people") +
+        (unverified ? ", " + unverified + " reported by the public and not yet verified." : ".")
+      : "";
+    $("#found-body").replaceChildren(...list.slice().reverse().map(f => el("tr", null, [
+      el("td", { text: f.id }),
+      el("td", null, [
+        f.source === "public" ? el("span", { class: "flag-badge", text: "Public report, unverified" }) : null,
+        el("span", { text: f.summary || summarize(f) }),
+      ]),
+      el("td", { text: [f.found_place, formatTime(f.found_time)].filter(Boolean).join(", ") }),
+      el("td", { text: f.current_location || "" }),
+      el("td", null, [f.claimed_by
+        ? el("button", { class: "link", text: "Reunited with " + f.claimed_by,
+            "aria-label": "Review report " + f.claimed_by, onclick: () => openReview(f.claimed_by) })
+        : el("span", { text: "Not matched yet" })]),
+    ])));
+  }
+
   /* Admin: access requests and authority accounts */
   async function loadRequests() {
     let list;
@@ -206,7 +243,7 @@ PAGES["authority-dashboard"] = async function () {
         const res = await guarded(() => api("POST", "/api/found", data), fMsg);
         fForm.reset();
         showMessage(fMsg, "success", "Found person saved as " + res.id + ". Match suggestions will update.");
-        await loadReports();
+        await Promise.all([loadReports(), loadFound()]);
         if (selected) await openReview(selected, true);
       } catch (e) { /* already shown */ }
     });
@@ -280,7 +317,7 @@ PAGES["authority-dashboard"] = async function () {
           return;
         }
         try {
-          await loadReports();
+          await Promise.all([loadReports(), loadFound()]);
           await openReview(mid, true);
         } catch (e) { return; }
         const done = { confirm: "Match with " + c.found_id + " confirmed. The family will see “Reunited”.",
@@ -345,9 +382,10 @@ PAGES["authority-dashboard"] = async function () {
   $("#refresh-reports").addEventListener("click", e => withBusy(e.currentTarget, async () => {
     try { await loadReports(); if (selected) await openReview(selected, true); } catch (err) { /* already shown */ }
   }));
+  $("#refresh-found").addEventListener("click", e => withBusy(e.currentTarget, loadFound));
   onDataMaybeChanged(async () => {
     try {
-      await loadReports();
+      await Promise.all([loadReports(), loadFound()]);
       if (isAdmin) await loadRequests();
     } catch (e) { /* already shown */ }
   });
@@ -355,5 +393,6 @@ PAGES["authority-dashboard"] = async function () {
   try { await loadReports(); } catch (e) { return; }
   show($("#main"), true);
   show($("#admin-panel"), isAdmin);
+  loadFound();
   if (isAdmin) await Promise.all([loadRequests(), loadAuthorities()]);
 };

@@ -55,6 +55,22 @@
       <div id="candidates"></div>
     </section>
 
+    <section class="card" aria-labelledby="found-list-title">
+      <div class="candidate-head">
+        <h2 id="found-list-title">Found people</h2>
+        <button type="button" id="refresh-found" class="secondary">Refresh</button>
+      </div>
+      <p id="found-count" class="hint" role="status"></p>
+      <div id="found-table" class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">ID</th><th scope="col">Summary</th><th scope="col">Found</th><th scope="col">Now at</th><th scope="col">Match</th></tr></thead>
+          <tbody id="found-body"></tbody>
+        </table>
+      </div>
+      <p id="found-empty" class="hidden">No found people recorded yet.</p>
+      <div id="found-list-message" class="message" role="alert" tabindex="-1"></div>
+    </section>
+
     <section class="card" aria-labelledby="found-title">
       <h2 id="found-title">Add a found person</h2>
       <form id="found-form" novalidate>

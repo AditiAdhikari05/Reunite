@@ -586,6 +586,13 @@ async function mockApi(method, path, body) {
     return { id };
   }
 
+  if (method === "GET" && path === "/api/found") {
+    isStaff();
+    return Object.entries(state.found).map(([id, f]) => Object.assign({ id }, f, {
+      source: f.source || "authority", summary: summarize(f), claimed_by: mockClaimedBy(state, id),
+    }));
+  }
+
   if (method === "GET" && path === "/api/missing") {
     isStaff();
     return Object.entries(state.missing).map(([id, r]) =>
